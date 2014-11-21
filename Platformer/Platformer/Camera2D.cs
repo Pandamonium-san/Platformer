@@ -24,7 +24,7 @@ namespace Platformer
             pos = Vector2.Zero;
         }
 
-        public void Update()
+        public void ControlCamera()
         {
             if (Keyboard.GetState().IsKeyDown(Keys.NumPad8))
                 Move(-Vector2.UnitY * speed);
@@ -43,7 +43,7 @@ namespace Platformer
             if (Keyboard.GetState().IsKeyDown(Keys.Subtract))
                 Zoom -= 0.05f;
             if (Keyboard.GetState().IsKeyDown(Keys.NumPad5))
-            { zoom = 1f; rotation = 0f; pos = new Vector2(320, 320); }
+            { zoom = 1f; rotation = 0f; }
         }
 
         public float Zoom
@@ -61,6 +61,14 @@ namespace Platformer
         public void Move(Vector2 amount)
         {
             pos += amount;
+        }
+
+        public void RestrictCamera(int x, int y)
+        {
+            if (pos.X < 0) pos.X = 0;
+            if (pos.Y < 0) pos.Y = 0;
+            if (pos.X > x) pos.X = x;
+            if (pos.Y > y - 400) pos.Y = y - 400;
         }
 
         public Matrix get_transformation(GraphicsDevice graphicsDevice)

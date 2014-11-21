@@ -7,15 +7,18 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Platformer
 {
-    abstract class DynamicGameObject:GameObject
+    abstract class Actor:GameObject
     {
         public Vector2 velocity;
-        public float acceleration;
         public Vector2 oldPos;
+        public float speed;
+        public bool dead, invulnerable;
+        public double invulnerableCount, invulnerableTime = 200;
+        public int health;
+        public enum Direction { left, right }
+        public Direction dir = Direction.right;
 
-        
-
-        public DynamicGameObject(Texture2D texture, Vector2 pos):base(texture, pos)
+        public Actor(Texture2D texture, Vector2 pos):base(texture, pos)
         {
 
         }
@@ -26,10 +29,15 @@ namespace Platformer
             Friction(gameTime);
             MoveAsFarAsPossible(gameTime);
             StopMovingIfBlocked();
-            hitbox = new Rectangle((int)pos.X + offsetX, (int)pos.Y + offsetY, texture.Width - offsetX * 2, texture.Height - offsetY * 2);
+            Invulnerability(gameTime);
+            hitbox = new Rectangle(
+                (int)pos.X + offsetX - (int)vectorOrigin.X,
+                (int)pos.Y + offsetY - (int)vectorOrigin.Y,
+                spriteRec.Width - offsetX * 2,
+                spriteRec.Height - offsetY * 2);
         }
 
-        public void MoveAsFarAsPossible(GameTime gameTime)
+        public void MoveAsFarAsPossible(GameTime gameTime)  //...before you collide with a platform
         {
             oldPos = pos;
             pos += velocity * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -38,29 +46,34 @@ namespace Platformer
 
         public bool CollidingWithPlatform(Rectangle hitbox)
         {
-            foreach (var p in ObjectManager.world.platforms)
+            foreach (var p in ObjectManager.platforms)
             if(velocity.Y >= 0 || p.isSolid)
                 if (hitbox.Intersects(p.hitbox))
                     return true;
             return false;
         }
 
-        public Vector2 PossiblePosition(Vector2 currentPos, Vector2 targetPos, Rectangle hitbox)
+        public Vector2 PossiblePosition(Vector2 currentPos, Vector2 targetPos, Rectangle hitbox)    //Splits movement for one frame into multiple smaller steps
         {
             Vector2 movement = targetPos - currentPos;
             Vector2 furthestPossiblePos = currentPos;
             int numberOfSteps = (int)(movement.Length()) + 1;
             Vector2 oneStep = movement / numberOfSteps;
+
             for (int i = 0; i <= numberOfSteps; i++)
             {
                 Vector2 attemptedPos = currentPos + oneStep * i;
-                Rectangle newHitbox = new Rectangle((int)attemptedPos.X+offsetX, (int)attemptedPos.Y+offsetY, hitbox.Width, hitbox.Height);
+                Rectangle newHitbox = new Rectangle(
+                    (int)attemptedPos.X + offsetX - (int)vectorOrigin.X,
+                    (int)attemptedPos.Y + offsetY - (int)vectorOrigin.Y,
+                    hitbox.Width,
+                    hitbox.Height);
 
                 if (!CollidingWithPlatform(newHitbox))
                     furthestPossiblePos = attemptedPos;
                 else
                 {
-                    if (movement.X != 0 && movement.Y != 0)
+                    if (movement.X != 0 && movement.Y != 0)     //Moves the remaining diagonal amount
                     {
                         int stepsLeft = numberOfSteps - (i - 1);
 
@@ -87,18 +100,27 @@ namespace Platformer
                 velocity.Y = 0;
         }
 
-        public bool PixelCollision(Platform go)
+        public bool PixelCollision(GameObject go)
         {
             Color[] dataA = new Color[texture.Width * texture.Height];
-            texture.GetData(dataA);
+            texture.GetData(0,
+                spriteRec,
+                dataA,
+                0,
+                spriteRec.Width * spriteRec.Height);
 
-            Color[] dataB = new Color[go.texture.Width * go.texture.Height];
-            go.texture.GetData(dataB);
+            Color[] dataB = new Color[go.spriteRec.Width * go.spriteRec.Height];
+            go.texture.GetData(0,
+                go.spriteRec,
+                dataB,
+                0,
+                go.spriteRec.Width * go.spriteRec.Height);
 
             int top = Math.Max(hitbox.Top, go.hitbox.Top);
             int bottom = Math.Min(hitbox.Bottom, go.hitbox.Bottom);
             int left = Math.Max(hitbox.Left, go.hitbox.Left);
             int right = Math.Min(hitbox.Right, go.hitbox.Right);
+
             for (int y = top; y < bottom; y++)
             {
                 for (int x = left; x < right; x++)
@@ -133,10 +155,42 @@ namespace Platformer
             if (OnGround())
                 velocity *= (float)Math.Pow(0.95f, 60 * (float)gameTime.ElapsedGameTime.TotalSeconds);
         }
-
-        public override void Draw(SpriteBatch spriteBatch)
+        public virtual void TakeDamage(int damage)
         {
-            spriteBatch.Draw(texture, pos, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.1f);
+            health -= damage;
+            if (health <= 0)
+                dead = true;
+            invulnerable = true;
+            Knockback();
+        }
+        protected virtual void Knockback()
+        {
+            if (dir == Player.Direction.left)
+            {
+                velocity = new Vector2(5, -5);
+            }
+            else
+            {
+                velocity = new Vector2(-5, -5);
+            }
+        }
+
+        protected void Invulnerability(GameTime gameTime)
+        {
+            if (invulnerable)
+            {
+                if (alpha == 1f)
+                    alpha = 0.2f;
+                else
+                    alpha = 1f;
+                invulnerableCount += gameTime.ElapsedGameTime.TotalMilliseconds;
+            }
+            if (invulnerableCount > invulnerableTime)
+            {
+                invulnerable = false;
+                color = Color.White;
+                invulnerableCount = 0;
+            }
         }
 
     }

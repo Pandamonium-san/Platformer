@@ -9,7 +9,7 @@ namespace Platformer
 {
     class Platform:GameObject
     {
-        public bool isSolid, followingMouse;
+        public bool isSolid;
 
         public Platform(Texture2D texture, Vector2 pos, int width, int height):base(texture, pos)
         {
