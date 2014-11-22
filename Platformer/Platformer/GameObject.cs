@@ -24,16 +24,16 @@ namespace Platformer
             hitbox = new Rectangle((int)pos.X + offsetX, (int)pos.Y + offsetY, texture.Width - offsetX * 2, texture.Height - offsetY * 2);
         }
 
-        public bool FellOff(int worldSizeY)
+        public bool FellOff()
         {
-            if (pos.Y > worldSizeY)
+            if (pos.Y > MapHandler.worldSize.Height)
                 return true;
             return false;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Game1.colorTexture, hitbox, null, Color.Red, 0f, Vector2.Zero, SpriteEffects.None, 0.2f); //hitbox
+            //spriteBatch.Draw(Game1.colorTexture, hitbox, null, Color.Red, 0f, Vector2.Zero, SpriteEffects.None, 0.2f); //hitbox
             spriteBatch.Draw(texture, pos, spriteRec, color * alpha, rotation, vectorOrigin, 1f, SpriteEffects.None, 0.1f);
         }
 

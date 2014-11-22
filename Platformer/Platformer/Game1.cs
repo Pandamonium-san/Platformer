@@ -16,7 +16,7 @@ namespace Platformer
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        public static Texture2D colorTexture, lifeHeart;
+        public static Texture2D colorTexture, lifeHeart, titleTexture1, titleTexture2;
         public static SpriteFont debugFont, hudFont, titleFont, font;
         public static Random rnd = new Random();
 
@@ -25,6 +25,7 @@ namespace Platformer
         ObjectManager objectManager;
         MapEditor mapEditor;
         Menu menu;
+        Background bg;
 
         public enum GameState { Title, Playing, MapEditor, Paused }
         GameState gameState = GameState.Title;
@@ -50,6 +51,8 @@ namespace Platformer
             colorTexture = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             colorTexture.SetData<Color>(new Color[] { Color.White });
             lifeHeart = Content.Load<Texture2D>("heart");
+            titleTexture1 = Content.Load<Texture2D>("Tower1");
+            titleTexture2 = Content.Load<Texture2D>("CrossedSwords");
 
             debugFont = Content.Load<SpriteFont>("DebugFont");
             hudFont = Content.Load<SpriteFont>("hudfont");
@@ -59,23 +62,25 @@ namespace Platformer
             menu = new Menu(Window);
             objectManager = new ObjectManager();
             objectManager.LoadContent(Content);
-            cam = new Camera2D();
+            cam = new Camera2D(GraphicsDevice.Viewport);
             hud = new HUD(1280, 720);
             mapEditor = new MapEditor();
+            bg = new Background(cam);
+            bg.LoadBackground(Content);
         }
 
         protected override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 this.Exit();
-            KeyMouseReader.Update(GraphicsDevice, cam);
+            KeyMouseReader.Update(cam);
 
 
             switch (gameState)
             {
                 case GameState.Title:
                     menu.Update();
-                    cam.pos = new Vector2(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+                    cam.Position = new Vector2(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
                     if (menu.play)
                     {
                         StartMap(menu.currentMap);
@@ -84,7 +89,6 @@ namespace Platformer
                     if (menu.editing)
                     {
                         StartMap(menu.currentMap);
-                        menu.editing = false;
                         gameState = GameState.MapEditor;
                     }
                     if (menu.exit.ButtonClicked() && menu.screen == Menu.Screen.title)
@@ -92,8 +96,7 @@ namespace Platformer
                     break;
                 case GameState.Playing:
                     objectManager.Update(gameTime);
-                    cam.pos = objectManager.player.pos;
-                    cam.RestrictCamera(MapHandler.worldSizeX, MapHandler.worldSizeY);
+                    cam.Position = objectManager.player.pos;
                     hud.Update(objectManager.player.health);
                     if (KeyMouseReader.KeyPressed(Keys.P))
                     {
@@ -126,6 +129,7 @@ namespace Platformer
                         gameState = GameState.Playing;
                     if (menu.back.ButtonClicked())
                         gameState = GameState.Title;
+
                     break;
                 default:
                     break;
@@ -138,7 +142,9 @@ namespace Platformer
         protected void StartMap(string path)
         {
             objectManager.Start(path);
-            cam.pos = objectManager.player.pos;
+            cam.Limits = MapHandler.worldSize;
+            cam.Position = objectManager.player.pos;
+            menu.editing = false;
             menu.play = false;
         }
 
@@ -152,13 +158,16 @@ namespace Platformer
                     menu.Draw(spriteBatch);
                     break;
                 case GameState.Playing:
+                    bg.Draw(spriteBatch);
                     objectManager.Draw(spriteBatch, GraphicsDevice, cam);
                     hud.Draw(spriteBatch);
                     break;
                 case GameState.MapEditor:
+                    bg.Draw(spriteBatch);
                     objectManager.Draw(spriteBatch, GraphicsDevice, cam);
                     break;
                 case GameState.Paused:
+                    bg.Draw(spriteBatch);
                     objectManager.Draw(spriteBatch, GraphicsDevice, cam);
                     menu.Draw(spriteBatch);
                     break;
@@ -175,14 +184,14 @@ namespace Platformer
             string positionInText = string.Format("Position of Jumper: ({0:0.0}, {1:0.0})", objectManager.player.pos.X, objectManager.player.pos.Y);
             string velocityInText = string.Format("Current velocity: ({0:0.0}, {1:0.0})", objectManager.player.velocity.X, objectManager.player.velocity.Y);
             string mousePosInText = string.Format("Position of Mouse: ({0:0.0}, {1:0.0})", KeyMouseReader.mousePos.X, KeyMouseReader.mousePos.Y);
-            string camPos = string.Format("Camera position: ({0:0.0}, {1:0.0})", cam.pos.X, cam.pos.Y);
+            string camPos = string.Format("Camera position: ({0:0.0}, {1:0.0})", cam.Position.X, cam.Position.Y);
             string isOnGround = string.Format("On ground: {0}", objectManager.player.OnGround());
             string isRunning = string.Format("Running: {0}", objectManager.player.running);
 
-            //spriteBatch.DrawString(debugFont, positionInText, new Vector2(10, 0), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+            //spriteBatch.DrawString(debugFont, velocityInText, new Vector2(10, 0), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             spriteBatch.DrawString(debugFont, isRunning, new Vector2(10, 20), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             spriteBatch.DrawString(debugFont, camPos, new Vector2(10, 40), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-            spriteBatch.DrawString(debugFont, mousePosInText, new Vector2(10, 60), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+            spriteBatch.DrawString(debugFont, velocityInText, new Vector2(10, 60), Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             spriteBatch.End();
         }
     }

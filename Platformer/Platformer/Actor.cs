@@ -18,6 +18,10 @@ namespace Platformer
         public enum Direction { left, right }
         public Direction dir = Direction.right;
 
+        protected int frameWidth = 32, frameHeight = 32, frame, maxFrames = 3;
+        protected int spriteOriginX, spriteOriginY;
+        protected double frameInterval = 100, frameTime = 0;
+
         public Actor(Texture2D texture, Vector2 pos):base(texture, pos)
         {
 
@@ -25,6 +29,7 @@ namespace Platformer
 
         public virtual void Update(GameTime gameTime)
         {
+            Animate(gameTime);
             Gravity(gameTime);
             Friction(gameTime);
             MoveAsFarAsPossible(gameTime);
@@ -91,7 +96,7 @@ namespace Platformer
             return furthestPossiblePos;
         }
 
-        private void StopMovingIfBlocked()
+        public virtual void StopMovingIfBlocked()
         {
             Vector2 lastMovement = pos - oldPos;
             if (lastMovement.X == 0)
@@ -155,14 +160,7 @@ namespace Platformer
             if (OnGround())
                 velocity *= (float)Math.Pow(0.95f, 60 * (float)gameTime.ElapsedGameTime.TotalSeconds);
         }
-        public virtual void TakeDamage(int damage)
-        {
-            health -= damage;
-            if (health <= 0)
-                dead = true;
-            invulnerable = true;
-            Knockback();
-        }
+
         protected virtual void Knockback()
         {
             if (dir == Player.Direction.left)
@@ -189,8 +187,23 @@ namespace Platformer
             {
                 invulnerable = false;
                 color = Color.White;
+                alpha = 1f;
                 invulnerableCount = 0;
             }
+        }
+
+        protected void Animate(GameTime gameTime)
+        {
+            frameTime += gameTime.ElapsedGameTime.TotalMilliseconds * Math.Abs(velocity.X / 5);
+
+            if (frameTime > frameInterval && OnGround())
+            {
+                frame++;
+                frameTime = 0;
+                if (frame == maxFrames)
+                    frame = 0;
+            }
+            spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, 32 * (int)dir + spriteOriginY, frameWidth, frameHeight);
         }
 
     }

@@ -12,13 +12,11 @@ namespace Platformer
     {
         public Weapon sword;
         public Vector2 acceleration;
+        public Vector2 dropOffPos;
 
         float jumpStrength;
         float groundSpeed;
         float midAirSpeed;
-        int frameWidth = 32, frameHeight = 32, frame, maxFrames = 3;
-        int spriteOriginX, spriteOriginY;
-        double frameInterval = 100, frameTime = 0;
 
         public bool running;
         bool rightKeyPressed, leftKeyPressed;
@@ -27,16 +25,16 @@ namespace Platformer
 
         public Player(Texture2D texture, Vector2 pos):base(texture, pos)
         {
-            invulnerableTime = 500;
+            invulnerableTime = 750;
             health = 10;
             jumpStrength = -15f;
             groundSpeed = 20f / 60;
             midAirSpeed = 10f / 60;
 
             offsetY = 0;
-            offsetX = 0;
+            offsetX = 4;
             spriteOriginX = 96;
-            spriteOriginY = 160;
+            spriteOriginY = 32;
             spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, 32 * (int)dir + spriteOriginY, frameWidth, frameHeight);
             sword = new Weapon(ObjectManager.swordTexture, pos);
             vectorOrigin = new Vector2(frameWidth / 2, frameHeight / 2);
@@ -51,10 +49,16 @@ namespace Platformer
         {
             velocity += acceleration * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
             Movement(gameTime);
-            Animate(gameTime);
 
             base.Update(gameTime);
             UpdateSword(gameTime);
+
+            if (FellOff())
+            {
+                PlayerFell();
+            }
+            if (OnGround())
+                dropOffPos = pos;
         }
 
         private void Movement(GameTime gameTime)
@@ -63,7 +67,10 @@ namespace Platformer
             if (running && !OnGround())
                 speed = midAirSpeed * 1.5f;
             else if (running && OnGround())
+            {
                 speed = groundSpeed * 1.5f;
+                GenerateSmokeParticle();
+            }
             else if (OnGround())
                 speed = groundSpeed;
             else
@@ -85,6 +92,13 @@ namespace Platformer
                 Jump();
             if (Keyboard.GetState().IsKeyDown(Keys.Up) && !OnGround() && velocity.Y < 0)
                 velocity.Y -= .4f;
+        }
+
+        private void GenerateSmokeParticle()
+        {
+            Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-10, 10)/20f, Game1.rnd.Next(-20, 5)/20f);
+            if(Game1.rnd.Next(1,10) == 1)
+            ObjectManager.particleEngine.CreateParticle(ObjectManager.smokeTexture, pos + Vector2.UnitY * 16, particleVelocity, Color.White, 1f);
         }
 
         private void Run(GameTime gameTime)
@@ -121,6 +135,38 @@ namespace Platformer
                 leftKeyPressed = true;
         }
 
+        public override void StopMovingIfBlocked()
+        {
+            Vector2 lastMovement = pos - oldPos;
+            if (lastMovement.X == 0)
+            {
+                velocity.X = 0;
+                running = false;
+            }
+            if (lastMovement.Y == 0)
+                velocity.Y = 0;
+        }
+
+        public void TakeDamage(int damage)
+        {
+            running = false;
+            health -= damage;
+            if (health <= 0)
+                dead = true;
+            invulnerable = true;
+            Knockback();
+        }
+
+        public void PlayerFell()
+        {
+            health -= 1;
+            pos = MapHandler.startingPos;
+            invulnerable = true;
+            invulnerableCount = -1000;
+            pos = MapHandler.startingPos;
+            velocity = Vector2.Zero;
+        }
+
         private void Jump()
         {
             velocity.Y = jumpStrength;
@@ -133,20 +179,6 @@ namespace Platformer
                 sword.Swing();
 
             sword.Update(gameTime, pos, dir);
-        }
-
-        private void Animate(GameTime gameTime)
-        {
-            frameTime += gameTime.ElapsedGameTime.TotalMilliseconds * Math.Abs(velocity.X / 5);
-
-            if (frameTime > frameInterval && OnGround())
-            {
-                frame++;
-                frameTime = 0;
-                if (frame == maxFrames)
-                    frame = 0;
-            }
-            spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, 32 * (int)dir + spriteOriginY, frameWidth, frameHeight);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

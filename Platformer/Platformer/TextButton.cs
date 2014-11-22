@@ -21,9 +21,10 @@ namespace Platformer
             this.rec = new Rectangle((int)(pos.X - origin.X), (int)(pos.Y - origin.Y), (int)(font.MeasureString(name).X), (int)(font.MeasureString(name).Y));
         }
 
-        public override void Draw(SpriteBatch spritebatch)
+        public override void Draw(SpriteBatch spriteBatch)
         {
-            spritebatch.DrawString(font, name, pos, color, 0f, origin, 1f, SpriteEffects.None, 0f);
+            base.Draw(spriteBatch);
+            spriteBatch.DrawString(font, name, pos, color, 0f, origin, 1f, SpriteEffects.None, 0f);
         }
     }
 }

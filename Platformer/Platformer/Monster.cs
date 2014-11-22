@@ -7,28 +7,28 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Platformer
 {
-    class Monster:Actor
+    class Monster : Actor
     {
         public int damage;
 
         public Monster(Texture2D texture, Vector2 pos)
             : base(texture, pos)
         {
-            damage = 1;
-            health = 3;
-            offsetX = 2;
-            offsetY = 6;
-            speed = 10f/60;
-            velocity.X = speed;
+            dir = Direction.right;
         }
 
         public override void Update(GameTime gameTime)
         {
-            velocity.X += speed;
-            if (WallInFront() || LedgeInFront())
-                speed = -speed;
-
             base.Update(gameTime);
+        }
+
+        public void Move()
+        {
+            if (dir == Direction.right)
+                speed = Math.Abs(speed);
+            else if (dir == Direction.left)
+                speed = -Math.Abs(speed);
+            velocity.X += speed;
         }
 
         public void TakeDamage(Player player, int damage)
@@ -37,9 +37,38 @@ namespace Platformer
             if (health <= 0)
                 dead = true;
             invulnerable = true;
-            Knockback(player);
+            Knockbacked(player);
+            for (int i = 0; i < 5; i++)
+            {
+                
+                GenerateHitParticle();
+            }
+            if (dead)
+                for (int i = 0; i < 15; i++)
+                {
+                    GenerateDeathParticle();
+                }
         }
-        public void Knockback(Player player)
+
+        private void GenerateDeathParticle()
+        {
+            Color color = new Color(Game1.rnd.Next(1, 40), Game1.rnd.Next(200, 255), Game1.rnd.Next(1, 40));
+            Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-20, 20) / 20f, Game1.rnd.Next(-20, 20) / 20f);
+            float lifeTime = lifeTime = 400 + Game1.rnd.Next(800);
+            float size = 4f;
+            ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, color, size, lifeTime);
+        }
+
+        private void GenerateHitParticle()
+        {
+            Color color = new Color(Game1.rnd.Next(1, 40), Game1.rnd.Next(200, 255), Game1.rnd.Next(1, 40));
+            Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-40, 40) / 20f, Game1.rnd.Next(-40, 40) / 20f);
+            float lifeTime = lifeTime = 200 + Game1.rnd.Next(100);
+            float size = 2f;
+            ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, color, size, lifeTime);
+        }
+
+        public void Knockbacked(Player player)
         {
             if (player.dir == Player.Direction.left)
             {
@@ -51,10 +80,10 @@ namespace Platformer
             }
         }
 
-        private bool LedgeInFront()
+        protected bool LedgeInFront()
         {
             Rectangle testRec;
-            if (velocity.X > 0)
+            if (dir == Direction.right)
             {
                 testRec = new Rectangle(hitbox.X + hitbox.Width, hitbox.Y + hitbox.Height, 1, 1);
                 testRec.Offset(2, 1);
@@ -67,10 +96,10 @@ namespace Platformer
             return !CollidingWithPlatform(testRec);
         }
 
-        private bool WallInFront()
+        protected bool WallInFront()
         {
             Rectangle testRec;
-            if (velocity.X > 0)
+            if (dir == Direction.right)
             {
                 testRec = new Rectangle(hitbox.X + hitbox.Width, hitbox.Y + hitbox.Height, 1, 1);
                 testRec.Offset(2, -1);
@@ -82,6 +111,14 @@ namespace Platformer
             }
 
             return CollidingWithPlatform(testRec);
+        }
+
+        protected void TurnAround()
+        {
+            if (dir == Direction.right)
+                dir = Direction.left;
+            else if (dir == Direction.left)
+                dir = Direction.right;
         }
     }
 }

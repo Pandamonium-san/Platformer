@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Platformer
 {
-    abstract class Sprite
+    class Sprite
     {
         public Texture2D texture;
         public Vector2 pos;
@@ -18,6 +18,15 @@ namespace Platformer
             this.pos = pos;
         }
 
-        public abstract void Draw(SpriteBatch spriteBatch);
+        public virtual void Draw(SpriteBatch spriteBatch)
+        {
+            if(texture != null)
+            spriteBatch.Draw(texture, pos, Color.White);
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Rectangle rectangle)
+        {
+            spriteBatch.Draw(texture, rectangle, Color.White);
+        }
     }
 }

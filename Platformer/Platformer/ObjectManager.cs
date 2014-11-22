@@ -10,9 +10,10 @@ namespace Platformer
 {
     class ObjectManager
     {
-        public static Texture2D tileTexture, swordTexture, actorTexture, slimeTexture;
+        public static Texture2D tileTexture, swordTexture, actorTexture, slimeTexture, smokeTexture;
         public static List<Platform> platforms;
         public static List<Monster> monsters;
+        public static ParticleEngine2D particleEngine;
 
         public Player player;
         public bool lose, win;
@@ -23,22 +24,23 @@ namespace Platformer
             swordTexture = Content.Load<Texture2D>("swordSheet");
             actorTexture = Content.Load<Texture2D>("Actor1");
             slimeTexture = Content.Load<Texture2D>("slime");
-            platforms = new List<Platform>();
-            monsters = new List<Monster>();
-            player = new Player(actorTexture, MapHandler.startingPos);
+            smokeTexture = Content.Load<Texture2D>("smoke_particle");
+            Start(null);
         }
 
         public void Start(string path)
         {
+            particleEngine = new ParticleEngine2D();
             win = false;
             lose = false;
 
-
             platforms = new List<Platform>();
             monsters = new List<Monster>();
-            LoadWorld(MapHandler.GetMapData(path));
-            LoadMonsters(MapHandler.GetMonsterData(path));
-
+            if (path != null)
+            {
+                LoadWorld(MapHandler.GetMapData(path));
+                LoadMonsters(MapHandler.GetMonsterData(path));
+            }
             player = new Player(actorTexture, MapHandler.startingPos);
         }
 
@@ -56,13 +58,13 @@ namespace Platformer
             if (monsterData != null)
                 for (int i = 0; i < monsterData.Count(); i++)
                 {
-                    monsters.Add(new Monster(ObjectManager.slimeTexture, new Vector2(monsterData[i][0], monsterData[i][1])));
+                    monsters.Add(new Slime(ObjectManager.slimeTexture, new Vector2(monsterData[i][0], monsterData[i][1])));
                 }
         }
 
         public void Update(GameTime gameTime)
         {
-
+            particleEngine.Update(gameTime);
             player.Update(gameTime);
             CheckIfPlayerFellOff();
 
@@ -80,7 +82,7 @@ namespace Platformer
                 if (!player.invulnerable && m.hitbox.Intersects(player.hitbox))
                     if (m.PixelCollision(player))
                         player.TakeDamage(m.damage);
-                if (m.FellOff(MapHandler.worldSizeY))
+                if (m.FellOff())
                 {
                     monsters.Remove(m);
                     break;
@@ -95,22 +97,17 @@ namespace Platformer
 
         private void CheckIfPlayerFellOff()
         {
-            if (player.FellOff(MapHandler.worldSizeY))
-            {
-                player.health -= 1;
-                player.pos = MapHandler.startingPos;
-                player.invulnerable = true;
-                player.invulnerableCount = -1000;
-            }
+            
         }
         
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, Camera2D cam)
         {
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, null, null, null, null, cam.get_transformation(graphicsDevice));
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, null, null, null, null, cam.GetViewMatrix(new Vector2(1,1)));
             foreach (var p in platforms)
                 p.Draw(spriteBatch);
             foreach (var m in monsters)
                 m.Draw(spriteBatch);
+            particleEngine.Draw(spriteBatch);
             player.Draw(spriteBatch);
             spriteBatch.End();
         }

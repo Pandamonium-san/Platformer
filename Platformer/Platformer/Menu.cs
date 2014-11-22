@@ -14,6 +14,8 @@ namespace Platformer
         public TextButton start, playButton, edit, exit, back;
         TextButton[] levelButtons;
         float centerX, centerY;
+        public List<Sprite> titleSprites;
+        public Sprite menuSprite;
 
         public enum Screen { title, levelSelect, gameOver, paused }
         public Screen screen;
@@ -21,16 +23,13 @@ namespace Platformer
         public bool play, editing;
         string winLoseText;
         Color winLoseColor;
-        string titleText = "platformer_title";
+        string titleText = "Platform Quest";
 
         public Menu(GameWindow window)
         {
             centerX = window.ClientBounds.Width / 2;
             centerY = window.ClientBounds.Height / 2;
-            titleButtons = new List<TextButton>();
-            titleButtons.Add(start = new TextButton(Game1.font, new Vector2(centerX, centerY+50),"START"));
-            titleButtons.Add(exit = new TextButton(Game1.font, new Vector2(centerX, centerY+200), "EXIT"));
-            screen = Screen.title;
+            LoadTitleScreen();
         }
 
         public void FindCenter(GameWindow window)
@@ -88,8 +87,11 @@ namespace Platformer
 
         public void LoadTitleScreen()
         {
+            titleSprites = new List<Sprite>();
+            titleSprites.Add(menuSprite = new Sprite(Game1.titleTexture1, Vector2.Zero));
             titleButtons = new List<TextButton>();
             titleButtons.Add(start = new TextButton(Game1.font, new Vector2(centerX, centerY + 50), "START"));
+            start.color = Color.Black;
             titleButtons.Add(exit = new TextButton(Game1.font, new Vector2(centerX, centerY + 200), "EXIT"));
             screen = Screen.title;
         }
@@ -100,14 +102,16 @@ namespace Platformer
             winLoseColor = Color.Red;
             playButton = new TextButton(Game1.font, new Vector2(centerX, centerY), "Try again");
             back = new TextButton(Game1.font, new Vector2(centerX, centerY + 50), "Back to main menu");
+            titleSprites[0] = new Sprite(Game1.titleTexture2, Vector2.Zero);
             screen = Screen.gameOver;
         }
         public void LoadVictoryScreen()
         {
-            winLoseText = "You defeated the bad guys!";
+            winLoseText = "You defeated all the enemies!";
             winLoseColor = Color.Green;
             playButton = new TextButton(Game1.font, new Vector2(centerX, centerY), "Play again");
             back = new TextButton(Game1.font, new Vector2(centerX, centerY + 50), "Back to main menu");
+            titleSprites[0] = new Sprite(Game1.titleTexture2, Vector2.Zero);
             screen = Screen.gameOver;
         }
 
@@ -138,11 +142,15 @@ namespace Platformer
             switch (screen)
             {
                 case Screen.title:
+                    foreach (Sprite sprite in titleSprites)
+                        sprite.Draw(spriteBatch, new Rectangle(0,0,(int)centerX*2,(int)centerY*2));
                     foreach (TextButton b in titleButtons)
                         b.Draw(spriteBatch);
                     spriteBatch.DrawString(Game1.titleFont, titleText, new Vector2(centerX, centerY - 50) - Game1.titleFont.MeasureString(titleText)/2, Color.White);
                     break;
                 case Screen.levelSelect:
+                    foreach (Sprite sprite in titleSprites)
+                        sprite.Draw(spriteBatch, new Rectangle(0, 0, (int)centerX * 2, (int)centerY * 2));
                     foreach (TextButton b in levelButtons)
                         b.Draw(spriteBatch);
                     playButton.Draw(spriteBatch);
@@ -151,6 +159,8 @@ namespace Platformer
                     spriteBatch.DrawString(Game1.font, "Current map: " + currentMap, Vector2.Zero, Color.White);
                     break;
                 case Screen.gameOver:
+                    foreach (Sprite sprite in titleSprites)
+                        sprite.Draw(spriteBatch, new Rectangle(0, 0, (int)centerX * 2, (int)centerY * 2));
                     playButton.Draw(spriteBatch);
                     back.Draw(spriteBatch);
                     spriteBatch.DrawString(Game1.font, winLoseText, new Vector2(centerX, centerY - 100)-Game1.font.MeasureString(winLoseText)/2, winLoseColor);

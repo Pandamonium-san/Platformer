@@ -28,7 +28,7 @@ static class KeyMouseReader
 	}
 
 	//Should be called at beginning of Update in Game
-	public static void Update(GraphicsDevice graphicsDevice, Platformer.Camera2D cam) {
+	public static void Update(Platformer.Camera2D cam) {
 		oldKeyState = keyState;
 		keyState = Keyboard.GetState();
 		oldMouseState = mouseState;
@@ -42,8 +42,8 @@ static class KeyMouseReader
         if (KeyMouseReader.RightClick())
             RightClickPos = mousePos;
 
-        mapEditMousePos = new Point((int)(KeyMouseReader.mouseState.X - graphicsDevice.Viewport.Width * 0.5f + cam.pos.X),
-                     (int)(KeyMouseReader.mouseState.Y - graphicsDevice.Viewport.Height * 0.5f + cam.pos.Y));
+        mapEditMousePos = new Point((int)(KeyMouseReader.mouseState.X - cam.origin.X + cam.Position.X),
+                     (int)(KeyMouseReader.mouseState.Y - cam.origin.Y + cam.Position.Y));
         mapEditLeftClickPos = new Point(-10000, -10000);         //Moves the mouseclick point outside the screen
         if (KeyMouseReader.LeftClick())
             mapEditLeftClickPos = mapEditMousePos;   //Creates point at mouse location for collision test

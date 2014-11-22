@@ -16,7 +16,7 @@ namespace Platformer
         public static String lvl2 = @"Content\lvl2.txt";
         public static String lvl3 = @"Content\lvl3.txt";
         public static Vector2 startingPos;
-        public static int worldSizeX, worldSizeY;
+        public static Rectangle worldSize;
 
         enum Read { platforms, monsters, playerPos, worldSize }
         static Read read;
@@ -109,9 +109,8 @@ namespace Platformer
 
         private static void ReadWorldSize()
         {
-            int[] worldSize = SplitLineAndConvertToInt();
-            worldSizeX = worldSize[0];
-            worldSizeY = worldSize[1];
+            int[] worldSizeData = SplitLineAndConvertToInt();
+            worldSize = new Rectangle(0, 0, worldSizeData[0], worldSizeData[1]);
         }
 
         private static int[] SplitLineAndConvertToInt()

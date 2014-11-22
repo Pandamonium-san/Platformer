@@ -3,106 +3,127 @@
   <Class Name="Platformer.Actor" Collapsed="true">
     <Position X="1.5" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAgCAAJikIAEAAAAAAgAAAAACAAREIAAQAgAAAAAg=</HashCode>
+      <HashCode>AAQAgCQAJikIAEAAAAAAgAQAAwCAQREoAEQAgQAAAAg=</HashCode>
       <FileName>Actor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Platformer.Background" Collapsed="true">
+    <Position X="9.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQABAAAAAAAAgAAAAAAAAAAAAACAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Background.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Button" Collapsed="true">
     <Position X="5.25" Y="4.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>CAQAAAAAAAAAAgAAAAIAAIAAAAAAAACAAAAQAAAAAgA=</HashCode>
+      <HashCode>CAQAAAAAgAAAAgAAAAIAAIAAAAAAAACAAAAQAAAIAgA=</HashCode>
       <FileName>Button.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Camera2D" Collapsed="true">
-    <Position X="9.75" Y="0.5" Width="1.5" />
+    <Position X="11.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAEAAAAAAIAAAIAAEACAALAAAAAkAQAAAAAAAAAAAAA=</HashCode>
+      <HashCode>CAEAAAAAAAAAAAAgFACAAZAAACEAAQAAAAAAAAAAAAA=</HashCode>
       <FileName>Camera2D.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Game1" Collapsed="true">
-    <Position X="11.5" Y="0.5" Width="1.5" />
+    <Position X="13.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAYEAGAAAAAAAwAAACAAECgAAAFAQCgAAAAgAAAAAAQ=</HashCode>
+      <HashCode>AAYEBGgAJAAAAwIAACAAECgAAAFAQCgAAAAgAAAAAAQ=</HashCode>
       <FileName>Game1.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.GameObject" Collapsed="true">
     <Position X="3.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAQAAAAAAgjAAgCAAAAAAAAAAACAAAAQAAAAAAA=</HashCode>
+      <HashCode>AAAAAAQAAAAAAgjAAgCAIAAAAAAAAACAAAAQAAAAAAA=</HashCode>
       <FileName>GameObject.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.HUD" Collapsed="true">
-    <Position X="13.25" Y="0.5" Width="1.5" />
+    <Position X="15" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gAQAAAAAAAAIAgAAAAIAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
+      <HashCode>gAQAAAAAAAAAAgAAAAIAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
       <FileName>HUD.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.HUDObject" Collapsed="true">
-    <Position X="15" Y="0.5" Width="1.5" />
+    <Position X="9.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAgAAAAAAAIAAAAAAACAIAAAAAAAAgAA=</HashCode>
       <FileName>HUDObject.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Platformer.MapEditor" Collapsed="true">
-    <Position X="11.5" Y="1.5" Width="1.5" />
+  <Class Name="Platformer.Layer" Collapsed="true">
+    <Position X="13.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAAAAAAQAAAAAAAAAAAAAAAAAAAAAEAAEABAAAACA=</HashCode>
+      <HashCode>AAAABAAAAAAAAgAAAAAACAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>Layer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Platformer.MapEditor" Collapsed="true">
+    <Position X="15" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAQAAgAAAAAAAAAAAAgAAAAAEAAEIBAAAACA=</HashCode>
       <FileName>MapEditor.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.MapHandler" Collapsed="true">
-    <Position X="13.25" Y="1.5" Width="1.5" />
+    <Position X="9.75" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>YAEAAAAEAAEAEAEAAKAAAAAADBAAAgAIQAAAAcACAAA=</HashCode>
+      <HashCode>YAEAAAAEAAEAEAEAAKAAACAAABAAAgAIQAAAAcACAAA=</HashCode>
       <FileName>MapHandler.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Menu" Collapsed="true">
-    <Position X="15" Y="1.5" Width="1.5" />
+    <Position X="11.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>IAQAAAEAAEQQAoggIAAAABwABAKAAAIAAAAIQmABAAA=</HashCode>
+      <HashCode>IAQAAAEQAEQQAoggIAAAABwABAKAAAIAAIAIQmABAAA=</HashCode>
       <FileName>Menu.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Monster" Collapsed="true">
-    <Position X="0.5" Y="4.75" Width="1.5" />
+    <Position X="2.75" Y="4.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAACAAAAAAgAEAAAAAAAAAAAAAAAgAAAAAgAAAAAA=</HashCode>
+      <HashCode>ABQAAAAAAIAAgAEAAAAAAAAAAAAAAQgAQAAAgAAAAAA=</HashCode>
       <FileName>Monster.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.ObjectManager" Collapsed="true">
-    <Position X="9.75" Y="2.5" Width="1.5" />
+    <Position X="13.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQCBAgAQCAAEiAAAAAAAAAAgAAAAgABAQAgEAgAAAQ=</HashCode>
+      <HashCode>AAQCAAAAQGAAUiAAAAAAAAAAgAAAAgABAQAAEAgAAAQ=</HashCode>
       <FileName>ObjectManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Platform" Collapsed="true">
-    <Position X="5" Y="3.25" Width="1.5" />
+    <Position X="7.25" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAAAAAAAAAAgAAAAAAIAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAQAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Platform.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Player" Collapsed="true">
-    <Position X="2.75" Y="4.75" Width="1.5" />
+    <Position X="0.5" Y="4.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAAAQAAhAABgAABAAEAAQAAwAAQAQgAEAAAQAAAAA=</HashCode>
+      <HashCode>ABQAAAAEAlAQFgAABAAEAAAgAAgBAAQEAAAAAAEAAAI=</HashCode>
       <FileName>Player.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Program" Collapsed="true">
-    <Position X="11.5" Y="2.5" Width="1.5" />
+    <Position X="15" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
       <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Platformer.Slime" Collapsed="true">
+    <Position X="2.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Slime.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Sprite" Collapsed="true">
@@ -120,14 +141,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Platformer.Weapon" Collapsed="true">
-    <Position X="7.25" Y="3.25" Width="1.5" />
+    <Position X="5" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAQQAAAAACAAgCAAAAAAAAQAAAAAQAAgAAAAAQAAAIA=</HashCode>
       <FileName>Weapon.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="KeyMouseReader" Collapsed="true">
-    <Position X="9.75" Y="1.5" Width="1.5" />
+    <Position X="11.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BBQCAAAAAAAAAAEAAACBAAACAAAAAAAAAAAKAAHAAAA=</HashCode>
       <FileName>KeyMouseReader.cs</FileName>

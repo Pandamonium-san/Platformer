@@ -9,8 +9,8 @@ namespace Platformer
 {
     class Button
     {
-        protected Rectangle rec;
-        protected Color color;
+        public Rectangle rec;
+        public Color color, defaultColor, highlightColor;
         protected Vector2 origin;
         protected Vector2 pos;
         protected float alpha;
@@ -21,8 +21,11 @@ namespace Platformer
             origin = new Vector2(x/2,y/2);
 
             this.rec = new Rectangle((int)(pos.X - origin.X), (int)(pos.Y - origin.Y), x, y);
-            color = Color.White;
+            defaultColor = Color.White;
+            highlightColor = Color.Red;
             alpha = 1f;
+
+
         }
 
         public virtual bool ButtonClicked()
@@ -36,14 +39,13 @@ namespace Platformer
         public virtual void Update()
         {
             if (rec.Contains(KeyMouseReader.mousePos))
-                color = Color.Red;
+                color = highlightColor;
             else
-                color = Color.White;
+                color = defaultColor;
         }
 
         public virtual void Draw(SpriteBatch spritebatch)
         {
-            spritebatch.Draw(Game1.colorTexture, rec, Color.Red);
             spritebatch.Draw(Game1.colorTexture, rec, null, new Color(55,55,55,155) * alpha, 0f, Vector2.Zero, SpriteEffects.None, 1f);   //Draw hitbox
         }
     }
