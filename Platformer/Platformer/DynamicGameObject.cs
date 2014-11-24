@@ -7,45 +7,58 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Platformer
 {
-    abstract class Actor:GameObject
+    abstract class DynamicGameObject:GameObject
     {
-
+        public Vector2 velocity;
+        public Vector2 oldPos;
         public float speed;
         public bool dead, invulnerable;
         public double invulnerableCount, invulnerableTime = 200;
         public int health;
+        public enum Direction { left, right }
+        public Direction dir = Direction.left;
 
-
-        public Actor(Texture2D texture, Vector2 pos):base(texture, pos)
+        public DynamicGameObject(Texture2D texture, Vector2 pos):base(texture, pos)
         {
 
         }
 
-        public override void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime)
         {
-            Animate(gameTime);
             Gravity(gameTime);
             Friction(gameTime);
             MoveAsFarAsPossible(gameTime);
             StopMovingIfBlocked();
             Invulnerability(gameTime);
-
-            base.Update(gameTime);
+            hitbox = new Rectangle(
+                (int)pos.X + offsetX - (int)vectorOrigin.X,
+                (int)pos.Y + offsetY - (int)vectorOrigin.Y,
+                spriteRec.Width - offsetX * 2,
+                spriteRec.Height - offsetY * 2);
         }
 
-        public void MoveAsFarAsPossible(GameTime gameTime)  //...before you collide with a platform
+        public void MoveAsFarAsPossible(GameTime gameTime)
         {
-            AddVelocityToPosition(gameTime);
+            oldPos = pos;
+            pos += velocity * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
             pos = PossiblePosition(oldPos, pos, hitbox);
         }
 
-        public Vector2 PossiblePosition(Vector2 currentPos, Vector2 targetPos, Rectangle hitbox)    //Splits movement for one frame into multiple smaller steps
+        public bool CollidingWithPlatform(Rectangle hitbox)
+        {
+            foreach (var p in ObjectManager.world.platforms)
+            if(velocity.Y >= 0 || p.isSolid)
+                if (hitbox.Intersects(p.hitbox))
+                    return true;
+            return false;
+        }
+
+        public Vector2 PossiblePosition(Vector2 currentPos, Vector2 targetPos, Rectangle hitbox)
         {
             Vector2 movement = targetPos - currentPos;
             Vector2 furthestPossiblePos = currentPos;
             int numberOfSteps = (int)(movement.Length()) + 1;
             Vector2 oneStep = movement / numberOfSteps;
-
             for (int i = 0; i <= numberOfSteps; i++)
             {
                 Vector2 attemptedPos = currentPos + oneStep * i;
@@ -59,7 +72,7 @@ namespace Platformer
                     furthestPossiblePos = attemptedPos;
                 else
                 {
-                    if (movement.X != 0 && movement.Y != 0)     //Moves the remaining diagonal amount
+                    if (movement.X != 0 && movement.Y != 0)
                     {
                         int stepsLeft = numberOfSteps - (i - 1);
 
@@ -77,7 +90,7 @@ namespace Platformer
             return furthestPossiblePos;
         }
 
-        public virtual void StopMovingIfBlocked()
+        private void StopMovingIfBlocked()
         {
             Vector2 lastMovement = pos - oldPos;
             if (lastMovement.X == 0)
@@ -88,7 +101,7 @@ namespace Platformer
 
         public bool PixelCollision(GameObject go)
         {
-            Color[] dataA = new Color[spriteRec.Width * spriteRec.Height];
+            Color[] dataA = new Color[texture.Width * texture.Height];
             texture.GetData(0,
                 spriteRec,
                 dataA,
@@ -106,7 +119,6 @@ namespace Platformer
             int bottom = Math.Min(hitbox.Bottom, go.hitbox.Bottom);
             int left = Math.Max(hitbox.Left, go.hitbox.Left);
             int right = Math.Min(hitbox.Right, go.hitbox.Right);
-
             for (int y = top; y < bottom; y++)
             {
                 for (int x = left; x < right; x++)
@@ -125,9 +137,14 @@ namespace Platformer
         public bool OnGround()
         {
             Rectangle rec = hitbox;
-            rec.Width -= 1;
+            rec.Width -= 4;
             rec.Offset(0, 1);
             return (CollidingWithPlatform(rec));
+        }
+
+        private void Gravity(GameTime gameTime)
+        {
+            velocity.Y += .6f;
         }
 
         private void Friction(GameTime gameTime)
@@ -136,16 +153,23 @@ namespace Platformer
             if (OnGround())
                 velocity *= (float)Math.Pow(0.95f, 60 * (float)gameTime.ElapsedGameTime.TotalSeconds);
         }
-
-        protected virtual void Knockback(Direction dir)
+        public virtual void TakeDamage()
         {
-            if (dir == Direction.left)
+            --health;
+            if (health <= 0)
+                dead = true;
+            invulnerable = true;
+            Knockback();
+        }
+        protected virtual void Knockback()
+        {
+            if (dir == Player.Direction.left)
             {
-                velocity = new Vector2(-5, -5);
+                velocity = new Vector2(5, -5);
             }
             else
             {
-                velocity = new Vector2(5, -5);
+                velocity = new Vector2(-5, -5);
             }
         }
 
@@ -153,30 +177,14 @@ namespace Platformer
         {
             if (invulnerable)
             {
-                if (alpha == 1f)
-                    alpha = 0.2f;
-                else
-                    alpha = 1f;
+                color = new Color(255, 255, 255, 255);
                 invulnerableCount += gameTime.ElapsedGameTime.TotalMilliseconds;
             }
             if (invulnerableCount > invulnerableTime)
             {
                 invulnerable = false;
-                alpha = 1f;
+                color = Color.White;
                 invulnerableCount = 0;
-            }
-        }
-
-        protected void Animate(GameTime gameTime)
-        {
-            frameTime += gameTime.ElapsedGameTime.TotalMilliseconds * Math.Abs(velocity.X / 5);
-
-            if (frameTime > frameInterval && OnGround())
-            {
-                frame++;
-                frameTime = 0;
-                if (frame >= maxFrames)
-                    frame = 0;
             }
         }
 

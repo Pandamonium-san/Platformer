@@ -9,8 +9,12 @@ namespace Platformer
 {
     abstract class Monster : Actor
     {
+        public List<Projectile> projectiles;
+
         public int damage;
         public int monsterID;
+        protected Vector2 jumpStrength = new Vector2(0,-10);
+        public bool ranged;
 
         protected Color hitColor, deathColor;
 
@@ -37,13 +41,25 @@ namespace Platformer
             velocity.X += speed * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
 
-        public void TakeDamage(Player player, int damage)
+        protected virtual void Jump()
         {
+            if (OnGround())
+            {
+                hitbox.Y -= 1;
+                velocity += jumpStrength + Vector2.UnitX * velocity * 4;
+            }
+        }
+
+        public void TakeDamage(Direction dir, int damage)
+        {
+            if (invulnerable)
+                return;
+
             health -= damage;
             if (health <= 0)
                 dead = true;
             invulnerable = true;
-            Knockbacked(player);
+            Knockback(dir);
             for (int i = 0; i < 5; i++)
             {
                 GenerateHitParticle();
@@ -73,18 +89,6 @@ namespace Platformer
             float lifeTime = lifeTime = 200 + Game1.rnd.Next(100);
             float size = 2f;
             ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, deathColor, size, lifeTime);
-        }
-
-        public void Knockbacked(Player player)
-        {
-            if (player.dir == Player.Direction.left)
-            {
-                velocity = new Vector2(-5, -5);
-            }
-            else
-            {
-                velocity = new Vector2(5, -5);
-            }
         }
 
         protected bool LedgeInFront()

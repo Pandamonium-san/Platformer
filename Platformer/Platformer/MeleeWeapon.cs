@@ -7,26 +7,21 @@ using System.Text;
 
 namespace Platformer
 {
-    class MeleeWeapon:Weapon
+    abstract class MeleeWeapon:Weapon
     {
 
 
         public MeleeWeapon(Texture2D texture, Vector2 pos):base(texture, pos)
         {
-            frameWidth = 176;
-            frameHeight = 169;
-            maxFrames = 9;
-
-            //frameWidth = 32;
-            //frameHeight = 32;
-            //maxFrames = 3;
-
-            frameInterval = 100;
-            vectorOrigin = new Vector2(frameWidth / 2, frameHeight / 2);
         }
 
         protected override void Attacking(GameTime gameTime)
         {
+            if (!OnCooldown())
+            {
+                frame = 0;
+                attacking = false;
+            }
             if (attacking)
             {
                 frameTime += gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -34,9 +29,9 @@ namespace Platformer
                 {
                     frame++;
                     frameTime = 0;
-                    if (frame >= maxFrames)
+                    if (OnCooldown() && frame >= maxFrames)
                     {
-                        frame = 0;
+                        frame = maxFrames - 1;
                         attacking = false;
                     }
                 }

@@ -167,6 +167,7 @@ namespace Platformer
                 case GameState.MapEditor:
                     bg.Draw(spriteBatch);
                     objectManager.Draw(spriteBatch, GraphicsDevice, cam);
+                    mapEditor.Draw(spriteBatch);
                     break;
                 case GameState.Paused:
                     bg.Draw(spriteBatch);

@@ -10,7 +10,7 @@ namespace Platformer
     static class MapHandler
     {
         public static StreamReader sr;
-        public static List<int[]> mapData, monsterData;
+        public static List<int[]> mapData, monsterData, weaponData;
         public static String test = @"Content\test.txt";
         public static String lvl1 = @"Content\lvl1.txt";
         public static String lvl2 = @"Content\lvl2.txt";
@@ -18,7 +18,7 @@ namespace Platformer
         public static Vector2 startingPos;
         public static Rectangle worldSize;
 
-        enum Read { platforms, monsters, playerPos, worldSize }
+        enum Read { platforms, monsters, weapons, playerPos, worldSize }
         static Read read;
 
         static string line;
@@ -81,6 +81,31 @@ namespace Platformer
             return monsterData;
         }
 
+        public static List<int[]> GetWeaponData(String mapPath)
+        {
+            if (!File.Exists(mapPath))
+                return null;
+            weaponData = new List<int[]>();
+
+            sr = new StreamReader(mapPath);
+            while (!sr.EndOfStream)
+            {
+                line = sr.ReadLine();
+                ReadHeaders();
+
+                if (line == "" || line[0] == '[')
+                    continue;
+
+                if (read == Read.weapons)
+                {
+                    weaponData.Add(SplitLineAndConvertToInt());
+                }
+            }
+            sr.Close();
+
+            return weaponData;
+        }
+
         private static void ReadHeaders()
         {
             if (line == "[platforms]")
@@ -98,6 +123,10 @@ namespace Platformer
             else if (line == "[monsters]")
             {
                 read = Read.monsters;
+            }
+            else if (line == "[weapons]")
+            {
+                read = Read.weapons;
             }
         }
 
@@ -128,22 +157,27 @@ namespace Platformer
         public static void SaveWorldToText(ObjectManager obj, string path)
         {
             List<String> mapText = new List<String>();
-            mapText.Add("[platforms]");
 
+            mapText.Add("[platforms]");
             for (int i = 0; i < ObjectManager.platforms.Count(); i++)
             {
                 line = ObjectManager.platforms[i].hitbox.X.ToString() + ";"
                     + ObjectManager.platforms[i].hitbox.Y.ToString() + ";"
-                    + ObjectManager.platforms[i].hitbox.Width.ToString() + ";"
-                    + ObjectManager.platforms[i].hitbox.Height.ToString();
+                    + ObjectManager.platforms[i].platformID.ToString();
                 mapText.Add(line);
             }
 
             mapText.Add("[monsters]");
-
             for (int i = 0; i < ObjectManager.monsters.Count(); i++)
             {
                 line = ((int)ObjectManager.monsters[i].pos.X).ToString() + ";" + ((int)ObjectManager.monsters[i].pos.Y).ToString() + ";" + ObjectManager.monsters[i].monsterID.ToString();
+                mapText.Add(line);
+            }
+
+            mapText.Add("[weapons]");
+            for (int i = 0; i < ObjectManager.weapons.Count(); i++)
+            {
+                line = ((int)ObjectManager.weapons[i].pos.X).ToString() + ";" + ((int)ObjectManager.weapons[i].pos.Y).ToString() + ";" + ObjectManager.weapons[i].weaponID.ToString();
                 mapText.Add(line);
             }
 
@@ -152,7 +186,7 @@ namespace Platformer
             mapText.Add(line);
 
             mapText.Add("[worldSize]");
-            line = "3000;1000";
+            line = "6016;1450";
             mapText.Add(line);
 
             File.WriteAllLines(path, mapText);

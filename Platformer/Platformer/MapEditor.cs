@@ -13,30 +13,52 @@ namespace Platformer
         static int tileSize = 32;
         Rectangle defaultRec = new Rectangle(0, 0, 32, 32);
         bool holdingObject, objectWasRemoved;
+        int platformID = 1;
 
-        enum Place { Platform, Slime, Red_Slime }
+        enum Place { Platform, Slime, Red_Slime, Skeleton, Gargoyle, Dagger, Ruby_Axe, Bow }
         Place placeTool = Place.Platform;
 
         public void Update(GameWindow window, ObjectManager obj)
         {
             objectWasRemoved = false;
-            //hud.Update();
-            //foreach (EditorButton b in hud.buttons)
-            //{
-            //    if (b.ButtonClicked())
-            //        placeTool = (Place)b.type;
-            //}
-            if (KeyMouseReader.KeyPressed(Keys.Q))
-            {
-                ++placeTool;
-                if ((int)placeTool == 3)
-                    placeTool = Place.Platform;
-            }
             if (KeyMouseReader.KeyPressed(Keys.W))
             {
-                --placeTool;
-                if ((int)placeTool == -1)
-                    placeTool = Place.Red_Slime;
+                if (placeTool == Place.Platform)
+                {
+                    ++platformID;
+                    if(platformID >= 8)
+                    {
+                        platformID = 7;
+                        ++placeTool;
+                    }
+                }
+                else
+                {
+                    ++placeTool;
+                    if ((int)placeTool == 8)
+                    {
+                        placeTool = Place.Platform;
+                        platformID = 1;
+                    }
+                }
+            }
+            if (KeyMouseReader.KeyPressed(Keys.Q))
+            {
+                if (placeTool == Place.Platform)
+                {
+                    --platformID;
+                    if (platformID <= 0)
+                    {
+                        platformID = 1;
+                        placeTool = Place.Bow;
+                    }
+                }
+                else
+                {
+                    --placeTool;
+                    if ((int)placeTool <= -1)
+                        placeTool = Place.Bow;
+                }
             }
                 if(KeyMouseReader.RightClick())
                 {
@@ -58,6 +80,13 @@ namespace Platformer
                             break;
                         }
                     }
+                    foreach (Weapon w in ObjectManager.weapons)
+                        if ((w.hitbox.Contains(KeyMouseReader.mapEditRightClickPos) && !holdingObject))
+                        {
+                            ObjectManager.weapons.Remove(w);
+                            objectWasRemoved = true;
+                            break;
+                        }
                     if (!objectWasRemoved && !holdingObject)
                         PlaceObject();
                 }
@@ -80,23 +109,39 @@ namespace Platformer
 
         private void PlaceObject()
         {
+            Vector2 mousePos = new Vector2(KeyMouseReader.mapEditMousePos.X, KeyMouseReader.mapEditMousePos.Y);
             switch (placeTool)
             {
                 case Place.Platform:
-                    Platform p = new Platform(ObjectManager.tileTexture, new Vector2(KeyMouseReader.mapEditMousePos.X, KeyMouseReader.mapEditMousePos.Y), 64, 64);
+                    Platform p = new Platform(ObjectManager.tileTexture, mousePos, platformID);
                     ObjectManager.platforms.Add(p);
                     SnapToGrid(p);
                     break;
                 case Place.Slime:
-                    ObjectManager.monsters.Add(new Slime(ObjectManager.slimeTexture, new Vector2(KeyMouseReader.mapEditMousePos.X, KeyMouseReader.mapEditMousePos.Y)));
+                    ObjectManager.monsters.Add(new Slime(ObjectManager.slimeTexture, mousePos));
                     break;
                 case Place.Red_Slime:
-                    ObjectManager.monsters.Add(new RedSlime(ObjectManager.redSlimeTexture, new Vector2(KeyMouseReader.mapEditMousePos.X, KeyMouseReader.mapEditMousePos.Y)));
+                    ObjectManager.monsters.Add(new RedSlime(ObjectManager.redSlimeTexture, mousePos));
+                    break;
+                case Place.Skeleton:
+                    ObjectManager.monsters.Add(new Skeleton(ObjectManager.monsterTexture, mousePos));
+                    break;
+                case Place.Gargoyle:
+                    ObjectManager.monsters.Add(new Gargoyle(ObjectManager.gargoyleTexture, mousePos));
+                    break;
+                case Place.Dagger:
+                    ObjectManager.weapons.Add(new Dagger(ObjectManager.daggerTexture, mousePos));
+                    break;
+                case Place.Ruby_Axe:
+                    ObjectManager.weapons.Add(new RubyAxe(ObjectManager.axeTexture, mousePos));
+                    break;
+                case Place.Bow:
+                    ObjectManager.weapons.Add(new Bow(ObjectManager.bowTexture, mousePos));
                     break;
             }
         }
 
-        private void MoveObject(GameObject p)
+        private void MoveObject(StaticGameObject p)
         {
             if (p.followingMouse)
             {
@@ -121,7 +166,7 @@ namespace Platformer
             }
         }
 
-        public void SnapToGrid(GameObject p)
+        public void SnapToGrid(StaticGameObject p)
         {
             if (p.hitbox.X > 0)
                 p.hitbox.X = ((p.hitbox.X + tileSize / 2) / tileSize) * tileSize;
@@ -135,6 +180,16 @@ namespace Platformer
 
             p.pos.X = p.hitbox.X;
             p.pos.Y = p.hitbox.Y;
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Begin();
+            if(placeTool == Place.Platform)
+                spriteBatch.DrawString(Game1.font, placeTool.ToString() + " " + platformID.ToString(), Vector2.Zero, Color.Red);
+            else
+                spriteBatch.DrawString(Game1.font, placeTool.ToString(), Vector2.Zero, Color.Red);
+            spriteBatch.End();
         }
     }
 }

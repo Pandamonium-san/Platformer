@@ -11,10 +11,9 @@ namespace Platformer
     abstract class Weapon:GameObject
     {
         public bool attacking, equipped;
-        public int damage;
-        Vector2 oldPos, velocity;
-
-        public Player.Direction dir = Player.Direction.left;
+        public int damage, weaponID;
+        protected float cooldown, cooldownCount;
+        public float weight;
 
         public Weapon(Texture2D texture, Vector2 pos)
             : base(texture, pos)
@@ -31,12 +30,12 @@ namespace Platformer
                 spriteRec.Height - offsetY * 2);
         }
 
-        public virtual void Update(GameTime gameTime)
+        public override void Update(GameTime gameTime)
         {
             if (!equipped)
             {
-                pos += velocity;
-                velocity.Y += .6f;
+                AddVelocityToPosition(gameTime);
+                Gravity(gameTime);
                 if (CollidingWithPlatform(hitbox))
                 {
                     velocity = Vector2.Zero;
@@ -44,21 +43,15 @@ namespace Platformer
                 }
             }
 
-            spriteRec = new Rectangle(frame * frameWidth, frameHeight * (int)dir, frameWidth, frameHeight);
-            hitbox = new Rectangle(
-                (int)pos.X + offsetX - (int)vectorOrigin.X,
-                (int)pos.Y + offsetY - (int)vectorOrigin.Y,
-                spriteRec.Width - offsetX * 2,
-                spriteRec.Height - offsetY * 2);
-
-            oldPos = pos;
+            base.Update(gameTime);
         }
 
-        public void UpdateEquippedWeapon(GameTime gameTime, Player player)
+        public void UpdateEquippedWeapon(GameTime gameTime, Actor actor)
         {
             if (equipped)
             {
-                WeaponIsHeld(player);
+                cooldownCount -= (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                WeaponIsHeld(actor);
                 Attacking(gameTime);
             }
             Update(gameTime);
@@ -70,32 +63,36 @@ namespace Platformer
             equipped = false;
         }
 
-        private void WeaponIsHeld(Player player)
+        private void WeaponIsHeld(Actor actor)
         {
-            this.dir = player.dir;
+            this.dir = actor.dir;
             if (dir == Player.Direction.left)
             {
-                this.pos = player.pos - Vector2.UnitX * spriteRec.Width/2;
+                this.pos = actor.pos - Vector2.UnitX * spriteRec.Width / 2 - Vector2.UnitX * 5;
             }
             else if (dir == Player.Direction.right)
             {
-                this.pos = player.pos + Vector2.UnitX * spriteRec.Width / 2;
+                this.pos = actor.pos + Vector2.UnitX * spriteRec.Width / 2 + Vector2.UnitX * 5;
             }
-        }
-
-        public bool CollidingWithPlatform(Rectangle hitbox)
-        {
-            foreach (var p in ObjectManager.platforms)
-                if (p.isSolid && hitbox.Intersects(p.hitbox))
-                        return true;
-            return false;
         }
 
         protected abstract void Attacking(GameTime gameTime);
 
         public void Attack()
         {
-            attacking = true;
+            if (!OnCooldown())
+            {
+                attacking = true;
+                cooldownCount = cooldown;
+            }
+        }
+
+        protected bool OnCooldown()
+        {
+            if (cooldownCount > 0)
+                return true;
+            else
+                return false;
         }
     }
 }

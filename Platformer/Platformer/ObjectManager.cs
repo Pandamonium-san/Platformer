@@ -11,7 +11,10 @@ namespace Platformer
 {
     class ObjectManager
     {
-        public static Texture2D tileTexture, swordTexture, actorTexture, slimeTexture, redSlimeTexture, smokeTexture, axeTexture;
+        public static Texture2D tileTexture, actorTexture, slimeTexture, redSlimeTexture, monsterTexture, gargoyleTexture, 
+            smokeTexture, 
+            daggerTexture, axeTexture, bowTexture,
+            arrowTexture, ballTexture;
         public static List<Platform> platforms;
         public static List<Monster> monsters;
         public static List<Weapon> weapons;
@@ -24,12 +27,17 @@ namespace Platformer
         public void LoadContent(ContentManager Content)
         {
             tileTexture = Content.Load<Texture2D>("tile");
-            swordTexture = Content.Load<Texture2D>("swordSheet");
+            daggerTexture = Content.Load<Texture2D>("swordSheet");
             actorTexture = Content.Load<Texture2D>("Actor1");
+            monsterTexture = Content.Load<Texture2D>("Monster1");
             slimeTexture = Content.Load<Texture2D>("slime");
             redSlimeTexture = Content.Load<Texture2D>("red_slime");
             smokeTexture = Content.Load<Texture2D>("smoke_particle");
             axeTexture = Content.Load<Texture2D>("RubyAxe1");
+            bowTexture = Content.Load<Texture2D>("bow");
+            arrowTexture = Content.Load<Texture2D>("arrow");
+            ballTexture = Content.Load<Texture2D>("ball");
+            gargoyleTexture = Content.Load<Texture2D>("gargoyle");
             Start(null);
         }
 
@@ -48,10 +56,9 @@ namespace Platformer
             {
                 LoadWorld(MapHandler.GetMapData(path));
                 LoadMonsters(MapHandler.GetMonsterData(path));
+                LoadWeapons(MapHandler.GetWeaponData(path));
             }
             player = new Player(actorTexture, MapHandler.startingPos);
-            weapons.Add(new MeleeWeapon(ObjectManager.axeTexture, player.pos));
-            //weapons.Add(new MeleeWeapon(ObjectManager.swordTexture, player.pos + Vector2.UnitX*50));
         }
 
         public void LoadWorld(List<int[]> mapData)
@@ -59,7 +66,7 @@ namespace Platformer
             if (mapData != null)
                 for (int i = 0; i < mapData.Count(); i++)
                 {
-                    platforms.Add(new Platform(ObjectManager.tileTexture, new Vector2(mapData[i][0], mapData[i][1]), mapData[i][2], mapData[i][3]));
+                    platforms.Add(new Platform(ObjectManager.tileTexture, new Vector2(mapData[i][0], mapData[i][1]), mapData[i][2]));
                 }
         }
 
@@ -69,16 +76,34 @@ namespace Platformer
             {
                 for (int i = 0; i < monsterData.Count(); i++)
                 {
+                    Vector2 position = new Vector2 (monsterData[i][0], monsterData[i][1]);
                     if (monsterData[i][2] == 1)
-                        monsters.Add(new Slime(ObjectManager.slimeTexture, new Vector2(monsterData[i][0], monsterData[i][1])));
+                        monsters.Add(new Slime(ObjectManager.slimeTexture, position));
                     else if (monsterData[i][2] == 2)
-                        monsters.Add(new RedSlime(ObjectManager.redSlimeTexture, new Vector2(monsterData[i][0], monsterData[i][1])));
+                        monsters.Add(new RedSlime(ObjectManager.redSlimeTexture, position));
+                    else if (monsterData[i][2] == 3)
+                        monsters.Add(new Skeleton(ObjectManager.monsterTexture, position));
+                    else if (monsterData[i][2] == 4)
+                        monsters.Add(new Gargoyle(ObjectManager.gargoyleTexture, position));
                 }
             }
         }
 
         public void LoadWeapons(List<int[]> weaponData)
         {
+            if (weaponData != null)
+            {
+                for (int i = 0; i < weaponData.Count(); i++)
+                {
+                    Vector2 position = new Vector2(weaponData[i][0], weaponData[i][1]);
+                    if (weaponData[i][2] == 1)
+                        weapons.Add(new Dagger(ObjectManager.daggerTexture, position));
+                    else if (weaponData[i][2] == 2)
+                        weapons.Add(new RubyAxe(ObjectManager.axeTexture, position));
+                    else if (weaponData[i][2] == 3)
+                        weapons.Add(new Bow(ObjectManager.bowTexture, position));
+                }
+            }
         }
 
         public void Update(GameTime gameTime)
@@ -91,12 +116,20 @@ namespace Platformer
             {
                 m.Update(gameTime);
                 WeaponCollidesWithMonster(player.equippedWeapon, m);
+                if(player.equippedWeapon is ProjectileWeapon)
+                    ProjectileCollidesWithMonster((ProjectileWeapon)player.equippedWeapon, m);
+                if (m.ranged)
+                    PlayerCollidesWithMonsterProjectile(m.projectiles);
                 PlayerCollidesWithMonster(m);
                 if (m.dead)
                 {
+                    if(m is Skeleton)
+                    MonsterDropWeapon((Skeleton)m);
                     monsters.Remove(m);
                     break;
                 }
+                if(m is Gargoyle)
+                UpdateGargoyle((Gargoyle)m);
             }
 
             if (WinCondition() || LoseCondition())
@@ -105,19 +138,60 @@ namespace Platformer
             }
         }
 
+        private void UpdateGargoyle(Gargoyle g)
+        {
+            g.TrackPlayer(player);
+        }
+
+        private void PlayerCollidesWithMonsterProjectile(List<Projectile> projectiles)
+        {
+            if (projectiles == null)
+                return;
+
+            for (int i = 0; i < projectiles.Count(); i++)
+            {
+                if (player.hitbox.Intersects(projectiles[i].hitbox))
+                    if (player.PixelCollision(projectiles[i]))
+                    {
+                        player.TakeDamage(projectiles[i].dir, projectiles[i].damage);
+                        projectiles.Remove(projectiles[i]);
+                        i--;
+                    }
+            }
+        }
+
         private void PlayerCollidesWithMonster(Monster m)
         {
             if (!player.invulnerable && !player.dying && m.hitbox.Intersects(player.hitbox))
                 if (m.PixelCollision(player))
-                    player.TakeDamage(m.damage);
+                    player.TakeDamage(m.dir, m.damage);
         }
 
         private void WeaponCollidesWithMonster(Weapon w, Monster m)
         {
-            if (w != null)
-                if (w.attacking && !m.invulnerable && m.hitbox.Intersects(w.hitbox))
-                    if (m.PixelCollision(w))
-                        m.TakeDamage(player, w.damage);
+            if (w == null || !(w is MeleeWeapon) || m.invulnerable)
+                return;
+
+            if (w.attacking  && m.hitbox.Intersects(w.hitbox))
+                if (m.PixelCollision(w))
+                    m.TakeDamage(player.dir, w.damage);
+        }
+
+        private void ProjectileCollidesWithMonster(ProjectileWeapon w, Monster m)
+        {
+            if (w == null || !(w is ProjectileWeapon) || m.invulnerable)
+                return;
+
+            for (int i = 0; i < w.projectiles.Count(); i++)
+            {
+                if (m.hitbox.Intersects(w.projectiles[i].hitbox))
+                    if (m.PixelCollision(w.projectiles[i]))
+                    {
+                        m.TakeDamage(w.projectiles[i].dir, w.damage);
+                        w.projectiles.Remove(w.projectiles[i]);
+                        i--;
+                    }
+            }
         }
 
         private void UpdateWeapons(GameTime gameTime)
@@ -139,6 +213,12 @@ namespace Platformer
             }
         }
 
+        private void MonsterDropWeapon(Skeleton s)
+        {
+            s.bow.PrepareToDropWeapon();
+            weapons.Add(s.bow);
+        }
+
         private void DropWeapon(Player player)
         {
             player.equippedWeapon.PrepareToDropWeapon();
@@ -155,9 +235,10 @@ namespace Platformer
 
         public bool WinCondition()
         {
-            if (monsters.Count() <= 0)
-                return true;
-            return false;
+            foreach(Monster m in monsters)
+                if(m is Gargoyle)
+                return false;
+            return true;
         }
 
         public bool LoseCondition()
@@ -167,7 +248,6 @@ namespace Platformer
             return false;
         }
 
-        
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, Camera2D cam)
         {
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, null, null, null, null, cam.GetViewMatrix(new Vector2(1,1)));

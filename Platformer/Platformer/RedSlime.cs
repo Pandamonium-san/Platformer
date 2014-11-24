@@ -9,7 +9,6 @@ namespace Platformer
 {
     class RedSlime : Slime
     {
-        protected Vector2 jumpStrength;
         float jumpCooldown;
         bool jumped;
 
@@ -37,7 +36,7 @@ namespace Platformer
             base.Update(gameTime);
         }
 
-        private void Jump()
+        protected override void Jump()
         {
             if (OnGround() && !jumped)
             {

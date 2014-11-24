@@ -12,13 +12,15 @@ namespace Platformer
     {
         public Weapon equippedWeapon;
         public Vector2 acceleration;
+
         public Vector2 dropOffPos;
+        private double dropOffInterval;
 
         float jumpStrength;
-        float groundSpeed;
-        float midAirSpeed;
+        float baseJumpStrength;
+        float baseSpeed;
 
-        public bool running, dying, weaponIsEquipped;
+        public bool attacking, running, dying, weaponIsEquipped;
         bool rightKeyPressed, leftKeyPressed;
         double inputCountR, inputTimeR = 500;
         double inputCountL, inputTimeL = 500;
@@ -27,14 +29,13 @@ namespace Platformer
         {
             invulnerableTime = 750;
             health = 10;
-            jumpStrength = -15f;
-            groundSpeed = 20f / 60;
-            midAirSpeed = 10f / 60;
+            baseJumpStrength = 15f;
+            baseSpeed = 20f / 60;
 
             offsetY = 0;
             offsetX = 4;
             spriteOriginX = 96;
-            spriteOriginY = 161;
+            spriteOriginY = 160;
             spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, frameHeight * (int)dir + spriteOriginY, frameWidth, frameHeight);
             vectorOrigin = new Vector2(frameWidth / 2, frameHeight / 2);
             hitbox = new Rectangle(
@@ -49,6 +50,8 @@ namespace Platformer
             if (!dead)
             {
                 velocity += acceleration * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                SetSpeedAndJumpDependingOnFactors();
                 Movement(gameTime);
                 PlayerDeath();
 
@@ -56,39 +59,32 @@ namespace Platformer
                 Weapon(gameTime);
 
                 if (FellOff())
-                {
                     PlayerFell();
-                }
-                if (OnGround())
+
+                if (OnGround() && dropOffInterval <= 0)
+                {
                     dropOffPos = pos;
+                    dropOffInterval = 1;
+                }
+                dropOffInterval -= gameTime.ElapsedGameTime.TotalSeconds;
             }
         }
 
         private void Movement(GameTime gameTime)
         {
             acceleration = Vector2.Zero;
-            if (running && !OnGround())
-                speed = midAirSpeed * 1.5f;
-            else if (running && OnGround())
-            {
-                speed = groundSpeed * 1.5f;
-                GenerateSmokeParticle();
-            }
-            else if (OnGround())
-                speed = groundSpeed;
-            else
-                speed = midAirSpeed;
-            
 
             Run(gameTime);
             if (Keyboard.GetState().IsKeyDown(Keys.Right))
             {
                 acceleration.X = speed;
+                if(!attacking)
                 dir = Direction.right;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Left))
             {
                 acceleration.X = -speed;
+                if(!attacking)
                 dir = Direction.left;
             }
             if (KeyMouseReader.KeyPressed(Keys.Up) && OnGround())
@@ -98,9 +94,35 @@ namespace Platformer
             
         }
 
+        private void SetSpeedAndJumpDependingOnFactors()
+        {
+            float currentSpeed = baseSpeed;
+
+            if (equippedWeapon != null)
+            currentSpeed = baseSpeed - equippedWeapon.weight/60f;
+
+            if (running)
+                currentSpeed *= 1.5f;
+            if (!OnGround())
+                currentSpeed *= 0.5f;
+
+            if (running && OnGround())
+                GenerateSmokeParticle();
+
+            speed = currentSpeed;
+
+            float currentJumpStrength = baseJumpStrength;
+            if (equippedWeapon != null)
+                currentJumpStrength -= equippedWeapon.weight / 2;
+            if (currentJumpStrength <= 7)
+                currentJumpStrength = 7;
+
+            jumpStrength = currentJumpStrength;
+        }
+
         private void Jump()
         {
-            velocity.Y = jumpStrength;
+            velocity.Y = -jumpStrength;
         }
 
         private void Run(GameTime gameTime)
@@ -149,25 +171,27 @@ namespace Platformer
                 velocity.Y = 0;
         }
 
-        public void TakeDamage(int damage)
+        public void TakeDamage(Direction dir, int damage)
         {
+            if (invulnerable)
+                return;
             running = false;
             health -= damage;
             if (health <= 0)
             { dying = true; invulnerableCount = -2000; }
             invulnerable = true;
-            Knockback();
+            Knockback(dir);
         }
 
         public void PlayerFell()
         {
             health -= 1;
             if (health <= 0)
-                dying = true;
-            pos = MapHandler.startingPos;
+                dead = true;
             invulnerable = true;
             invulnerableCount = -1000;
-            pos = MapHandler.startingPos;
+            if(!dead)
+            pos = dropOffPos;
             velocity = Vector2.Zero;
         }
 
@@ -189,8 +213,13 @@ namespace Platformer
 
         public void Attack()
         {
-            if (equippedWeapon != null && KeyMouseReader.KeyPressed(Keys.Z) && !equippedWeapon.attacking)
+            if (equippedWeapon != null && Keyboard.GetState().IsKeyDown(Keys.Z) && !equippedWeapon.attacking)
+            {
                 equippedWeapon.Attack();
+                attacking = true;
+            }
+            if (equippedWeapon == null || !equippedWeapon.attacking)
+                attacking = false;
         }
 
         private void PlayerDeath()

@@ -107,7 +107,7 @@ namespace Platformer
         }
         public void LoadVictoryScreen()
         {
-            winLoseText = "You defeated all the enemies!";
+            winLoseText = "                                Congratulations! \n You mercilessly slaughtered the all the monsters!";
             winLoseColor = Color.Green;
             playButton = new TextButton(Game1.font, new Vector2(centerX, centerY), "Play again");
             back = new TextButton(Game1.font, new Vector2(centerX, centerY + 50), "Back to main menu");
