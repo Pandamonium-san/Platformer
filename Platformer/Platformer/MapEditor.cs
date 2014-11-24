@@ -14,7 +14,7 @@ namespace Platformer
         Rectangle defaultRec = new Rectangle(0, 0, 32, 32);
         bool holdingObject, objectWasRemoved;
 
-        enum Place { Platform, Slime }
+        enum Place { Platform, Slime, Red_Slime }
         Place placeTool = Place.Platform;
 
         public void Update(GameWindow window, ObjectManager obj)
@@ -29,14 +29,14 @@ namespace Platformer
             if (KeyMouseReader.KeyPressed(Keys.Q))
             {
                 ++placeTool;
-                if ((int)placeTool == 2)
+                if ((int)placeTool == 3)
                     placeTool = Place.Platform;
             }
             if (KeyMouseReader.KeyPressed(Keys.W))
             {
                 --placeTool;
                 if ((int)placeTool == -1)
-                    placeTool = Place.Slime;
+                    placeTool = Place.Red_Slime;
             }
                 if(KeyMouseReader.RightClick())
                 {
@@ -71,6 +71,10 @@ namespace Platformer
             {
                 MoveObject(m);
             }
+            foreach (Weapon w in ObjectManager.weapons)
+            {
+                MoveObject(w);
+            }
             MoveObject(obj.player);
         }
 
@@ -84,7 +88,10 @@ namespace Platformer
                     SnapToGrid(p);
                     break;
                 case Place.Slime:
-                    ObjectManager.monsters.Add(new Monster(ObjectManager.slimeTexture, new Vector2(KeyMouseReader.mapEditMousePos.X, KeyMouseReader.mapEditMousePos.Y)));
+                    ObjectManager.monsters.Add(new Slime(ObjectManager.slimeTexture, new Vector2(KeyMouseReader.mapEditMousePos.X, KeyMouseReader.mapEditMousePos.Y)));
+                    break;
+                case Place.Red_Slime:
+                    ObjectManager.monsters.Add(new RedSlime(ObjectManager.redSlimeTexture, new Vector2(KeyMouseReader.mapEditMousePos.X, KeyMouseReader.mapEditMousePos.Y)));
                     break;
             }
         }
@@ -93,8 +100,8 @@ namespace Platformer
         {
             if (p.followingMouse)
             {
-                p.pos.X = KeyMouseReader.mapEditMousePos.X - p.hitbox.Width / 2;
-                p.pos.Y = KeyMouseReader.mapEditMousePos.Y - p.hitbox.Height / 2;
+                p.pos.X = KeyMouseReader.mapEditMousePos.X - p.hitbox.Width / 2 + p.spriteRec.Width/2;
+                p.pos.Y = KeyMouseReader.mapEditMousePos.Y - p.hitbox.Height / 2 + p.spriteRec.Height/2;
                 p.hitbox.X = KeyMouseReader.mapEditMousePos.X - p.hitbox.Width / 2;
                 p.hitbox.Y = KeyMouseReader.mapEditMousePos.Y - p.hitbox.Height / 2;
             }
@@ -107,6 +114,7 @@ namespace Platformer
             else if (KeyMouseReader.LeftClick() && p.followingMouse)
             {
                 p.followingMouse = false;
+                if (p is Platform)
                 SnapToGrid(p);
                 holdingObject = false;
                 return;

@@ -12,6 +12,8 @@ namespace Platformer
 
         public Slime(Texture2D texture, Vector2 pos):base(texture, pos)
         {
+            monsterID = 1;
+
             frameWidth = 32;
             frameHeight = 32;
             damage = 1;
@@ -34,10 +36,16 @@ namespace Platformer
 
         public override void Update(GameTime gameTime)
         {
-            Move();
+            Move(gameTime);
             if (OnGround() && (WallInFront() || LedgeInFront()))
                 TurnAround();
             base.Update(gameTime);
+        }
+
+        protected override void SetParticleColor()
+        {
+            hitColor = new Color(Game1.rnd.Next(1, 40), Game1.rnd.Next(200, 255), Game1.rnd.Next(1, 40));
+            deathColor = new Color(Game1.rnd.Next(1, 40), Game1.rnd.Next(200, 255), Game1.rnd.Next(1, 40));
         }
 
     }

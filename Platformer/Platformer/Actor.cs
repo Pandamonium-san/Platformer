@@ -18,10 +18,6 @@ namespace Platformer
         public enum Direction { left, right }
         public Direction dir = Direction.right;
 
-        protected int frameWidth = 32, frameHeight = 32, frame, maxFrames = 3;
-        protected int spriteOriginX, spriteOriginY;
-        protected double frameInterval = 100, frameTime = 0;
-
         public Actor(Texture2D texture, Vector2 pos):base(texture, pos)
         {
 
@@ -35,6 +31,7 @@ namespace Platformer
             MoveAsFarAsPossible(gameTime);
             StopMovingIfBlocked();
             Invulnerability(gameTime);
+
             hitbox = new Rectangle(
                 (int)pos.X + offsetX - (int)vectorOrigin.X,
                 (int)pos.Y + offsetY - (int)vectorOrigin.Y,
@@ -107,7 +104,7 @@ namespace Platformer
 
         public bool PixelCollision(GameObject go)
         {
-            Color[] dataA = new Color[texture.Width * texture.Height];
+            Color[] dataA = new Color[spriteRec.Width * spriteRec.Height];
             texture.GetData(0,
                 spriteRec,
                 dataA,
@@ -144,14 +141,14 @@ namespace Platformer
         public bool OnGround()
         {
             Rectangle rec = hitbox;
-            rec.Width -= 4;
+            rec.Width -= 1;
             rec.Offset(0, 1);
             return (CollidingWithPlatform(rec));
         }
 
         private void Gravity(GameTime gameTime)
         {
-            velocity.Y += .6f;
+            velocity.Y += .6f * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
 
         private void Friction(GameTime gameTime)
@@ -186,7 +183,6 @@ namespace Platformer
             if (invulnerableCount > invulnerableTime)
             {
                 invulnerable = false;
-                color = Color.White;
                 alpha = 1f;
                 invulnerableCount = 0;
             }
@@ -200,10 +196,10 @@ namespace Platformer
             {
                 frame++;
                 frameTime = 0;
-                if (frame == maxFrames)
+                if (frame >= maxFrames)
                     frame = 0;
             }
-            spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, 32 * (int)dir + spriteOriginY, frameWidth, frameHeight);
+            spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, frameHeight * (int)dir + spriteOriginY, frameWidth, frameHeight);
         }
 
     }

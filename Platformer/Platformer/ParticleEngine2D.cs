@@ -11,7 +11,6 @@ namespace Platformer
     {
         private Random rnd;
         List<Particle> particles;
-        public Vector2 spawnLocation;
 
         public ParticleEngine2D()
         {

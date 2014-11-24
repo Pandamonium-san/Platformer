@@ -10,7 +10,7 @@ namespace Platformer
 {
     class Player:Actor
     {
-        public Weapon sword;
+        public Weapon equippedWeapon;
         public Vector2 acceleration;
         public Vector2 dropOffPos;
 
@@ -18,7 +18,7 @@ namespace Platformer
         float groundSpeed;
         float midAirSpeed;
 
-        public bool running;
+        public bool running, dying, weaponIsEquipped;
         bool rightKeyPressed, leftKeyPressed;
         double inputCountR, inputTimeR = 500;
         double inputCountL, inputTimeL = 500;
@@ -34,9 +34,8 @@ namespace Platformer
             offsetY = 0;
             offsetX = 4;
             spriteOriginX = 96;
-            spriteOriginY = 32;
-            spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, 32 * (int)dir + spriteOriginY, frameWidth, frameHeight);
-            sword = new Weapon(ObjectManager.swordTexture, pos);
+            spriteOriginY = 161;
+            spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, frameHeight * (int)dir + spriteOriginY, frameWidth, frameHeight);
             vectorOrigin = new Vector2(frameWidth / 2, frameHeight / 2);
             hitbox = new Rectangle(
                 (int)pos.X + offsetX - (int)vectorOrigin.X,
@@ -47,18 +46,22 @@ namespace Platformer
 
         public override void Update(GameTime gameTime)
         {
-            velocity += acceleration * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            Movement(gameTime);
-
-            base.Update(gameTime);
-            UpdateSword(gameTime);
-
-            if (FellOff())
+            if (!dead)
             {
-                PlayerFell();
+                velocity += acceleration * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                Movement(gameTime);
+                PlayerDeath();
+
+                base.Update(gameTime);
+                Weapon(gameTime);
+
+                if (FellOff())
+                {
+                    PlayerFell();
+                }
+                if (OnGround())
+                    dropOffPos = pos;
             }
-            if (OnGround())
-                dropOffPos = pos;
         }
 
         private void Movement(GameTime gameTime)
@@ -92,13 +95,12 @@ namespace Platformer
                 Jump();
             if (Keyboard.GetState().IsKeyDown(Keys.Up) && !OnGround() && velocity.Y < 0)
                 velocity.Y -= .4f;
+            
         }
 
-        private void GenerateSmokeParticle()
+        private void Jump()
         {
-            Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-10, 10)/20f, Game1.rnd.Next(-20, 5)/20f);
-            if(Game1.rnd.Next(1,10) == 1)
-            ObjectManager.particleEngine.CreateParticle(ObjectManager.smokeTexture, pos + Vector2.UnitY * 16, particleVelocity, Color.White, 1f);
+            velocity.Y = jumpStrength;
         }
 
         private void Run(GameTime gameTime)
@@ -152,7 +154,7 @@ namespace Platformer
             running = false;
             health -= damage;
             if (health <= 0)
-                dead = true;
+            { dying = true; invulnerableCount = -2000; }
             invulnerable = true;
             Knockback();
         }
@@ -160,6 +162,8 @@ namespace Platformer
         public void PlayerFell()
         {
             health -= 1;
+            if (health <= 0)
+                dying = true;
             pos = MapHandler.startingPos;
             invulnerable = true;
             invulnerableCount = -1000;
@@ -167,25 +171,65 @@ namespace Platformer
             velocity = Vector2.Zero;
         }
 
-        private void Jump()
+        private void Weapon(GameTime gameTime)
         {
-            velocity.Y = jumpStrength;
+            if (equippedWeapon != null)
+            {
+                equippedWeapon.UpdateEquippedWeapon(gameTime, this);
+                Attack();
+            }
         }
 
-        private void UpdateSword(GameTime gameTime)
+        public void EquipWeapon(Weapon weapon)
         {
+            equippedWeapon = weapon;
+            equippedWeapon.equipped = true;
+            weaponIsEquipped = true;
+        }
 
-            if (KeyMouseReader.KeyPressed(Keys.Z) && !sword.swingWeapon)
-                sword.Swing();
+        public void Attack()
+        {
+            if (equippedWeapon != null && KeyMouseReader.KeyPressed(Keys.Z) && !equippedWeapon.attacking)
+                equippedWeapon.Attack();
+        }
 
-            sword.Update(gameTime, pos, dir);
+        private void PlayerDeath()
+        {
+            if (dying)
+            {
+                if(!dead)
+                    GenerateDeathParticle();
+                if(!invulnerable)
+                    dead = true;
+            }
+        }
+
+        private void GenerateSmokeParticle()
+        {
+            Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-10, 10) / 20f, Game1.rnd.Next(-20, 5) / 20f);
+            if (Game1.rnd.Next(1, 10) == 1)
+                ObjectManager.particleEngine.CreateParticle(ObjectManager.smokeTexture, pos + Vector2.UnitY * 16, particleVelocity, Color.White, 1f);
+        }
+
+        private void GenerateDeathParticle()
+        {
+            Color color = new Color(Game1.rnd.Next(200, 255), Game1.rnd.Next(1, 40), Game1.rnd.Next(1, 40));
+            Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-10, 10) / 20f, Game1.rnd.Next(-2, 40) / 20f);
+            float lifeTime = lifeTime = 500 + Game1.rnd.Next(100);
+            float size = 4f;
+
+            ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, color, size, lifeTime);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             //spriteBatch.Draw(Game1.colorTexture, hitbox, null, Color.Red, 0f, Vector2.Zero, SpriteEffects.None, 0.8f);
-            base.Draw(spriteBatch);
-            sword.Draw(spriteBatch);
+            if (!dead)
+            {
+                if(equippedWeapon!=null)
+                equippedWeapon.Draw(spriteBatch);
+                base.Draw(spriteBatch);
+            }
         }
     }
 }

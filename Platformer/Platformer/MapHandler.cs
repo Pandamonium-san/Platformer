@@ -143,7 +143,7 @@ namespace Platformer
 
             for (int i = 0; i < ObjectManager.monsters.Count(); i++)
             {
-                line = ((int)ObjectManager.monsters[i].pos.X).ToString() + ";" + ((int)ObjectManager.monsters[i].pos.Y).ToString();
+                line = ((int)ObjectManager.monsters[i].pos.X).ToString() + ";" + ((int)ObjectManager.monsters[i].pos.Y).ToString() + ";" + ObjectManager.monsters[i].monsterID.ToString();
                 mapText.Add(line);
             }
 

@@ -7,28 +7,34 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Platformer
 {
-    class Monster : Actor
+    abstract class Monster : Actor
     {
         public int damage;
+        public int monsterID;
+
+        protected Color hitColor, deathColor;
 
         public Monster(Texture2D texture, Vector2 pos)
             : base(texture, pos)
         {
+            invulnerableTime = 400;
             dir = Direction.right;
         }
 
         public override void Update(GameTime gameTime)
         {
+            if (FellOff())
+                dead = true;
             base.Update(gameTime);
         }
 
-        public void Move()
+        public void Move(GameTime gameTime)
         {
             if (dir == Direction.right)
                 speed = Math.Abs(speed);
             else if (dir == Direction.left)
                 speed = -Math.Abs(speed);
-            velocity.X += speed;
+            velocity.X += speed * 60 * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
 
         public void TakeDamage(Player player, int damage)
@@ -40,7 +46,6 @@ namespace Platformer
             Knockbacked(player);
             for (int i = 0; i < 5; i++)
             {
-                
                 GenerateHitParticle();
             }
             if (dead)
@@ -50,22 +55,24 @@ namespace Platformer
                 }
         }
 
-        private void GenerateDeathParticle()
+        protected abstract void SetParticleColor();
+
+        protected virtual void GenerateDeathParticle()
         {
-            Color color = new Color(Game1.rnd.Next(1, 40), Game1.rnd.Next(200, 255), Game1.rnd.Next(1, 40));
+            SetParticleColor();
             Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-20, 20) / 20f, Game1.rnd.Next(-20, 20) / 20f);
             float lifeTime = lifeTime = 400 + Game1.rnd.Next(800);
             float size = 4f;
-            ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, color, size, lifeTime);
+            ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, hitColor, size, lifeTime);
         }
 
-        private void GenerateHitParticle()
+        protected virtual void GenerateHitParticle()
         {
-            Color color = new Color(Game1.rnd.Next(1, 40), Game1.rnd.Next(200, 255), Game1.rnd.Next(1, 40));
+            SetParticleColor();
             Vector2 particleVelocity = new Vector2(Game1.rnd.Next(-40, 40) / 20f, Game1.rnd.Next(-40, 40) / 20f);
             float lifeTime = lifeTime = 200 + Game1.rnd.Next(100);
             float size = 2f;
-            ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, color, size, lifeTime);
+            ObjectManager.particleEngine.CreateParticle(Game1.colorTexture, pos, particleVelocity, deathColor, size, lifeTime);
         }
 
         public void Knockbacked(Player player)

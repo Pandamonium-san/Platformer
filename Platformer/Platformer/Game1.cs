@@ -75,7 +75,6 @@ namespace Platformer
                 this.Exit();
             KeyMouseReader.Update(cam);
 
-
             switch (gameState)
             {
                 case GameState.Title:
@@ -103,16 +102,7 @@ namespace Platformer
                         menu.LoadPauseScreen();
                         gameState = GameState.Paused;
                     }
-                    if (objectManager.win)
-                    {
-                        menu.LoadVictoryScreen();
-                        gameState = GameState.Title;
-                    }
-                    if (objectManager.lose)
-                    {
-                        menu.LoadGameOverScreen();
-                        gameState = GameState.Title;
-                    }
+                    CheckWinOrLose();
                     break;
                 case GameState.MapEditor:
                     cam.ControlCamera();
@@ -134,9 +124,21 @@ namespace Platformer
                 default:
                     break;
             }
-            
-
             base.Update(gameTime);
+        }
+
+        protected void CheckWinOrLose()
+        {
+            if (objectManager.WinCondition() && objectManager.gameOverCounter <= 0)
+            {
+                menu.LoadVictoryScreen();
+                gameState = GameState.Title;
+            }
+            if (objectManager.LoseCondition() && objectManager.gameOverCounter <= 0)
+            {
+                menu.LoadGameOverScreen();
+                gameState = GameState.Title;
+            }
         }
 
         protected void StartMap(string path)

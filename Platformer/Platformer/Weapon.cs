@@ -4,17 +4,15 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace Platformer
 {
-    class Weapon:GameObject
+    abstract class Weapon:GameObject
     {
-        public bool swingWeapon;
+        public bool attacking, equipped;
         public int damage;
-
-        int frameWidth = 32, frameHeight = 32, frame = 0;
-        double animationCounter;
-        int frameTime = 40;
+        Vector2 oldPos, velocity;
 
         public Player.Direction dir = Player.Direction.left;
 
@@ -22,8 +20,8 @@ namespace Platformer
             : base(texture, pos)
         {
             damage = 1;
-
-            spriteRec = new Rectangle(0, 0, 32, 32);
+            layerDepth = 0.05f;
+            spriteRec = new Rectangle(frame * frameWidth, frameHeight * (int)dir, frameWidth, frameHeight);
             vectorOrigin = new Vector2(frameWidth / 2, frameHeight / 2);
 
             hitbox = new Rectangle(
@@ -33,47 +31,71 @@ namespace Platformer
                 spriteRec.Height - offsetY * 2);
         }
 
-        public void Update(GameTime gameTime, Vector2 playerPos, Player.Direction playerDirection)
+        public virtual void Update(GameTime gameTime)
         {
-            this.dir = playerDirection;
-            if (dir == Player.Direction.left)
+            if (!equipped)
             {
-                this.pos = playerPos - Vector2.UnitX * 25; //- Vector2.UnitY * 10;
-                //rotation = -0.3f;
-            }
-            else if (dir == Player.Direction.right)
-            {
-                this.pos = playerPos + Vector2.UnitX * 25; // -Vector2.UnitY * 18;
-                //rotation = 0.3f;
-            }
-
-            if (swingWeapon)
-            {
-               animationCounter += gameTime.ElapsedGameTime.TotalMilliseconds;
-               if (animationCounter > frameTime)
-               {
-                   frame++;
-                   if (frame > 2)
-                   {
-                       frame = 0;
-                       swingWeapon = false;
-                   }
-                   animationCounter = 0;
-               }
+                pos += velocity;
+                velocity.Y += .6f;
+                if (CollidingWithPlatform(hitbox))
+                {
+                    velocity = Vector2.Zero;
+                    pos = oldPos;
+                }
             }
 
-            spriteRec = new Rectangle(frame * frameWidth, 32 * (int)dir, 32, 32);
-
+            spriteRec = new Rectangle(frame * frameWidth, frameHeight * (int)dir, frameWidth, frameHeight);
             hitbox = new Rectangle(
                 (int)pos.X + offsetX - (int)vectorOrigin.X,
                 (int)pos.Y + offsetY - (int)vectorOrigin.Y,
                 spriteRec.Width - offsetX * 2,
                 spriteRec.Height - offsetY * 2);
+
+            oldPos = pos;
         }
 
-        public void Swing()
+        public void UpdateEquippedWeapon(GameTime gameTime, Player player)
         {
-            swingWeapon = true;
+            if (equipped)
+            {
+                WeaponIsHeld(player);
+                Attacking(gameTime);
+            }
+            Update(gameTime);
+        }
+
+        public void PrepareToDropWeapon()
+        {
+            frame = 0;
+            equipped = false;
+        }
+
+        private void WeaponIsHeld(Player player)
+        {
+            this.dir = player.dir;
+            if (dir == Player.Direction.left)
+            {
+                this.pos = player.pos - Vector2.UnitX * spriteRec.Width/2;
+            }
+            else if (dir == Player.Direction.right)
+            {
+                this.pos = player.pos + Vector2.UnitX * spriteRec.Width / 2;
+            }
+        }
+
+        public bool CollidingWithPlatform(Rectangle hitbox)
+        {
+            foreach (var p in ObjectManager.platforms)
+                if (p.isSolid && hitbox.Intersects(p.hitbox))
+                        return true;
+            return false;
+        }
+
+        protected abstract void Attacking(GameTime gameTime);
+
+        public void Attack()
+        {
+            attacking = true;
         }
     }
 }
