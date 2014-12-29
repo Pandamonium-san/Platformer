@@ -92,6 +92,7 @@
     <Compile Include="MapHandler.cs" />
     <Compile Include="ObjectManager.cs" />
     <Compile Include="Platform.cs" />
+    <Compile Include="Powerup.cs" />
     <Compile Include="Projectile.cs" />
     <Compile Include="ProjectileWeapon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

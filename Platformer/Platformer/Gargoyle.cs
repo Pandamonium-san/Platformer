@@ -9,7 +9,7 @@ namespace Platformer
 {
     class Gargoyle : Monster
     {
-        float projectileSpeed = 7f;
+        float projectileSpeed = 4f;
         Vector2 playerPos;
 
         bool leaping;
@@ -27,7 +27,8 @@ namespace Platformer
             maxFrames = 4;
 
             damage = 2;
-            health = 20;
+            maxHealth = 20;
+            CurrentHealth = maxHealth;
 
             speed = 8f / 60;
             velocity.X = speed;
@@ -54,7 +55,7 @@ namespace Platformer
                 foreach (Projectile p in projectiles)
                     p.Update(gameTime);
 
-            if (Game1.rnd.Next(100 + health * 10) == 1)
+            if (Game1.rnd.Next(100 + CurrentHealth * 10) == 1)
                 Shoot(playerPos);
 
             if(leaping)

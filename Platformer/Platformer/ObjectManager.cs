@@ -18,6 +18,7 @@ namespace Platformer
         public static List<Platform> platforms;
         public static List<Monster> monsters;
         public static List<Weapon> weapons;
+        public static List<Powerup> powerups;
         public static ParticleEngine2D particleEngine;
 
         public Player player;
@@ -52,6 +53,7 @@ namespace Platformer
             platforms = new List<Platform>();
             monsters = new List<Monster>();
             weapons = new List<Weapon>();
+            powerups = new List<Powerup>();
             if (path != null)
             {
                 LoadWorld(MapHandler.GetMapData(path));
@@ -111,6 +113,7 @@ namespace Platformer
             particleEngine.Update(gameTime);
             player.Update(gameTime);
             UpdateWeapons(gameTime);
+            UpdatePowerups();
 
             foreach (var m in monsters)
             {
@@ -125,6 +128,8 @@ namespace Platformer
                 {
                     if(m is Skeleton)
                     MonsterDropWeapon((Skeleton)m);
+                    if (Game1.rnd.Next(5) == 1)
+                        CreateHealth(m.pos);
                     monsters.Remove(m);
                     break;
                 }
@@ -138,9 +143,43 @@ namespace Platformer
             }
         }
 
+        private void CreateHealth(Vector2 pos)
+        {
+            powerups.Add(new Powerup(Game1.lifeHeart, pos + Vector2.UnitY * -5));
+        }
+        
+        private void UpdatePowerups()
+        {
+            foreach(Powerup p in powerups)
+                if(p.hitbox.Intersects(player.hitbox))
+                {
+                    ++player.CurrentHealth;
+                    powerups.Remove(p);
+                    break;
+                }
+        }
+
         private void UpdateGargoyle(Gargoyle g)
         {
             g.TrackPlayer(player);
+        }
+        private void UpdateWeapons(GameTime gameTime)
+        {
+            if (player.weaponIsEquipped && KeyMouseReader.KeyPressed(Keys.X))
+            {
+                DropWeapon(player);
+                return;
+            }
+
+            foreach (Weapon w in weapons)
+            {
+                w.Update(gameTime);
+                if (!player.weaponIsEquipped && w.hitbox.Intersects(player.hitbox) && KeyMouseReader.KeyPressed(Keys.X))
+                {
+                    EquipWeaponToPlayer(w, player);
+                    break;
+                }
+            }
         }
 
         private void PlayerCollidesWithMonsterProjectile(List<Projectile> projectiles)
@@ -194,25 +233,6 @@ namespace Platformer
             }
         }
 
-        private void UpdateWeapons(GameTime gameTime)
-        {
-            if (player.weaponIsEquipped && KeyMouseReader.KeyPressed(Keys.X))
-            {
-                DropWeapon(player);
-                return;
-            }
-
-            foreach(Weapon w in weapons)
-            {
-                w.Update(gameTime);
-                if (!player.weaponIsEquipped && w.hitbox.Intersects(player.hitbox) && KeyMouseReader.KeyPressed(Keys.X))
-                {
-                    EquipWeaponToPlayer(w, player);
-                    break;
-                }
-            }
-        }
-
         private void MonsterDropWeapon(Skeleton s)
         {
             s.bow.PrepareToDropWeapon();
@@ -257,6 +277,8 @@ namespace Platformer
                 m.Draw(spriteBatch);
             foreach (var w in weapons)
                 w.Draw(spriteBatch);
+            foreach (var p in powerups)
+                p.Draw(spriteBatch);
             player.Draw(spriteBatch);
             particleEngine.Draw(spriteBatch);
             spriteBatch.End();

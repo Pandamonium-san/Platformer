@@ -96,7 +96,7 @@ namespace Platformer
                 case GameState.Playing:
                     objectManager.Update(gameTime);
                     cam.Position = objectManager.player.pos;
-                    hud.Update(objectManager.player.health);
+                    hud.Update(objectManager.player.CurrentHealth, objectManager.player.maxHealth);
                     if (KeyMouseReader.KeyPressed(Keys.P))
                     {
                         menu.LoadPauseScreen();
@@ -176,7 +176,7 @@ namespace Platformer
                     break;
             }
 
-            DrawDebugInfo(spriteBatch);
+           //DrawDebugInfo(spriteBatch);
 
             base.Draw(gameTime);
         }

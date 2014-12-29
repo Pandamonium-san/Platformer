@@ -14,6 +14,7 @@ namespace Platformer
         public int damage, weaponID;
         protected float cooldown, cooldownCount;
         public float weight;
+        protected Vector2 weaponOffset;
 
         public Weapon(Texture2D texture, Vector2 pos)
             : base(texture, pos)
@@ -68,11 +69,13 @@ namespace Platformer
             this.dir = actor.dir;
             if (dir == Player.Direction.left)
             {
-                this.pos = actor.pos - Vector2.UnitX * spriteRec.Width / 2 - Vector2.UnitX * 5;
+                this.pos.X = actor.pos.X - spriteRec.Width / 2 - weaponOffset.X;
+                this.pos.Y = actor.pos.Y + weaponOffset.Y;
             }
             else if (dir == Player.Direction.right)
             {
-                this.pos = actor.pos + Vector2.UnitX * spriteRec.Width / 2 + Vector2.UnitX * 5;
+                this.pos.X = actor.pos.X + spriteRec.Width / 2 + weaponOffset.X;
+                this.pos.Y = actor.pos.Y + weaponOffset.Y;
             }
         }
 

@@ -28,13 +28,14 @@ namespace Platformer
         public Player(Texture2D texture, Vector2 pos):base(texture, pos)
         {
             invulnerableTime = 750;
-            health = 10;
+            maxHealth = 15;
+            CurrentHealth = maxHealth;
             baseJumpStrength = 15f;
             baseSpeed = 20f / 60;
 
             offsetY = 0;
             offsetX = 4;
-            spriteOriginX = 96;
+            spriteOriginX = 96*3;
             spriteOriginY = 160;
             spriteRec = new Rectangle(frame * frameWidth + spriteOriginX, frameHeight * (int)dir + spriteOriginY, frameWidth, frameHeight);
             vectorOrigin = new Vector2(frameWidth / 2, frameHeight / 2);
@@ -78,20 +79,20 @@ namespace Platformer
             if (Keyboard.GetState().IsKeyDown(Keys.Right))
             {
                 acceleration.X = speed;
-                if(!attacking)
-                dir = Direction.right;
+                if (!attacking)
+                    dir = Direction.right;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Left))
             {
                 acceleration.X = -speed;
-                if(!attacking)
-                dir = Direction.left;
+                if (!attacking)
+                    dir = Direction.left;
             }
-            if (KeyMouseReader.KeyPressed(Keys.Up) && OnGround())
+            if ((KeyMouseReader.KeyPressed(Keys.Up) || KeyMouseReader.KeyPressed(Keys.Space)) && OnGround())
                 Jump();
-            if (Keyboard.GetState().IsKeyDown(Keys.Up) && !OnGround() && velocity.Y < 0)
+            if ((Keyboard.GetState().IsKeyDown(Keys.Up) || Keyboard.GetState().IsKeyDown(Keys.Space)) && !OnGround() && velocity.Y < 0)
                 velocity.Y -= .4f;
-            
+
         }
 
         private void SetSpeedAndJumpDependingOnFactors()
@@ -176,8 +177,8 @@ namespace Platformer
             if (invulnerable)
                 return;
             running = false;
-            health -= damage;
-            if (health <= 0)
+            CurrentHealth -= damage;
+            if (CurrentHealth <= 0)
             { dying = true; invulnerableCount = -2000; }
             invulnerable = true;
             Knockback(dir);
@@ -185,8 +186,8 @@ namespace Platformer
 
         public void PlayerFell()
         {
-            health -= 1;
-            if (health <= 0)
+            CurrentHealth -= 1;
+            if (CurrentHealth <= 0)
                 dead = true;
             invulnerable = true;
             invulnerableCount = -1000;

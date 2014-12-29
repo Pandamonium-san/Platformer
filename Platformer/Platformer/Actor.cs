@@ -13,7 +13,13 @@ namespace Platformer
         public float speed;
         public bool dead, invulnerable;
         public double invulnerableCount, invulnerableTime = 200;
-        public int health;
+        public int currentHealth, maxHealth;
+
+        public int CurrentHealth
+        {
+            get { return currentHealth; }
+            set { currentHealth = value; if (currentHealth > maxHealth) currentHealth = maxHealth; if (currentHealth < 0) currentHealth = 0; }
+        }
 
 
         public Actor(Texture2D texture, Vector2 pos):base(texture, pos)
@@ -85,7 +91,6 @@ namespace Platformer
             if (lastMovement.Y == 0)
                 velocity.Y = 0;
         }
-
         public bool PixelCollision(GameObject go)
         {
             Color[] dataA = new Color[spriteRec.Width * spriteRec.Height];
@@ -140,13 +145,9 @@ namespace Platformer
         protected virtual void Knockback(Direction dir)
         {
             if (dir == Direction.left)
-            {
                 velocity = new Vector2(-5, -5);
-            }
             else
-            {
                 velocity = new Vector2(5, -5);
-            }
         }
 
         protected void Invulnerability(GameTime gameTime)

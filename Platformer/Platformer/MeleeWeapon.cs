@@ -9,7 +9,7 @@ namespace Platformer
 {
     abstract class MeleeWeapon:Weapon
     {
-
+        bool backwards;
 
         public MeleeWeapon(Texture2D texture, Vector2 pos):base(texture, pos)
         {
@@ -21,19 +21,34 @@ namespace Platformer
             {
                 frame = 0;
                 attacking = false;
+                backwards = false;
             }
             if (attacking)
             {
                 frameTime += gameTime.ElapsedGameTime.TotalMilliseconds;
                 if (frameTime > frameInterval)
                 {
-                    frame++;
-                    frameTime = 0;
-                    if (OnCooldown() && frame >= maxFrames)
+                    if (!backwards)
                     {
-                        frame = maxFrames - 1;
-                        attacking = false;
+                        ++frame;
+                        if (frame >= maxFrames)
+                        {
+                            frame = maxFrames - 1;
+                            backwards = true;
+                        }
                     }
+                    else
+                    {
+                        --frame;
+                        if (frame <= 0)
+                        {
+                            frame = 0;
+                            backwards = false;
+                            attacking = false;
+                        }
+                    }
+                    
+                    frameTime = 0;
                 }
             }
         }

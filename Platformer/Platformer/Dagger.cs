@@ -20,6 +20,7 @@ namespace Platformer
                 cooldown = 150;
                 weight = 2;
 
+                weaponOffset = new Vector2(5,0);
                 frameWidth = 32;
                 frameHeight = 32;
                 maxFrames = 3;

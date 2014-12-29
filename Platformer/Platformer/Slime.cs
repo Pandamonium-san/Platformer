@@ -17,7 +17,8 @@ namespace Platformer
             frameWidth = 32;
             frameHeight = 32;
             damage = 1;
-            health = 3;
+            maxHealth = 3;
+            CurrentHealth = maxHealth;
             offsetX = 2;
             offsetY = 6;
             speed = 5f / 60;

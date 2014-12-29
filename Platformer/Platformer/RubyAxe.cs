@@ -17,13 +17,15 @@ namespace Platformer
                 weaponID = 2;
 
                 damage = 3;
-                cooldown = 1500;
+                cooldown = 1300;
                 weight = 7;
 
+
+                weaponOffset = new Vector2(-5,-15);
                 frameWidth = 88;
                 frameHeight = 84;
                 maxFrames = 9;
-                frameInterval = 100;
+                frameInterval = 50;
 
                 vectorOrigin = new Vector2(frameWidth / 2, frameHeight / 2);
             }

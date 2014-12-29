@@ -23,7 +23,8 @@ namespace Platformer
             maxFrames = 3;
 
             damage = 1;
-            health = 10;
+            maxHealth = 10;
+            CurrentHealth = maxHealth;
 
             speed = 4f / 60;
             velocity.X = speed;

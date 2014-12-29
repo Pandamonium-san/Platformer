@@ -20,7 +20,8 @@ namespace Platformer
             jumpStrength = new Vector2(0, -10);
             jumpCooldown = 3000;
             damage = 1;
-            health = 5;
+            maxHealth = 5;
+            CurrentHealth = maxHealth;
             speed = 6f / 60;
             velocity.X = speed;
         }

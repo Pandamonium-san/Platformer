@@ -33,7 +33,6 @@ namespace Platformer
                         Width = System.Math.Max(viewport.Width, value.Value.Width),
                         Height = System.Math.Max(viewport.Height, value.Value.Height)
                     };
-                    pos = pos;
                 }
                 else
                 {

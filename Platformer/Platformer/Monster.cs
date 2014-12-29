@@ -21,7 +21,7 @@ namespace Platformer
         public Monster(Texture2D texture, Vector2 pos)
             : base(texture, pos)
         {
-            invulnerableTime = 400;
+            invulnerableTime = 200;
             dir = Direction.right;
         }
 
@@ -55,8 +55,8 @@ namespace Platformer
             if (invulnerable)
                 return;
 
-            health -= damage;
-            if (health <= 0)
+            CurrentHealth -= damage;
+            if (CurrentHealth <= 0)
                 dead = true;
             invulnerable = true;
             Knockback(dir);
